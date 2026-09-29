@@ -28,9 +28,32 @@ jobs:
           username: DevopsNimbus
           theme: orbit
           output: profile/git3d.svg
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify generated visualization
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s profile/git3d.svg
+
+          if grep -q "testusername" profile/git3d.svg; then
+            echo "ERROR: Generated SVG still contains testusername."
+            exit 1
+          fi
+
+          if ! grep -q "DevopsNimbus" profile/git3d.svg; then
+            echo "ERROR: Generated SVG does not contain DevopsNimbus."
+            exit 1
+          fi
+
+          echo "Git3D SVG verification passed."
 
       - name: Commit Git3D visualization
+        shell: bash
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -45,4 +68,15 @@ jobs:
 
           git pull --rebase origin main
 
-          git push origin main
+          for attempt in 1 2 3; do
+            if git push origin main; then
+              echo "Git3D profile pushed successfully."
+              exit 0
+            fi
+
+            echo "Push attempt $attempt failed; refreshing remote and retrying..."
+            git pull --rebase origin main
+          done
+
+          echo "ERROR: Unable to push Git3D profile after 3 attempts."
+          exit 1
