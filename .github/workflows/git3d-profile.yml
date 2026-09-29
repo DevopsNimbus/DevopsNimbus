@@ -8,26 +8,22 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: git3d-profile
-  cancel-in-progress: false
-
 jobs:
   generate:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout profile repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
-      - name: Generate Git3D Profile
-        uses: SandeepKomal/git3d-profile@main
+      - name: Generate Git3D visualization
+        uses: SandeepKomal/git3d-profile@feature/profile-readme-integration
         with:
-          username: testusername
+          username: ${{ github.repository_owner }}
           theme: orbit
           output: profile/git3d.svg
 
-      - name: Commit generated visualization
+      - name: Commit Git3D output
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -37,6 +33,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No Git3D changes."
           else
-            git commit -m "chore: generate Git3D profile"
+            git commit -m "chore: refresh Git3D profile"
             git push
           fi
