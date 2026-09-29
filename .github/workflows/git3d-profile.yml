@@ -1,3 +1,4 @@
+
 name: Git3D Profile
 
 on:
@@ -24,11 +25,12 @@ jobs:
 
       - name: Generate Git3D visualization
         uses: SandeepKomal/git3d-profile@feature/profile-readme-integration
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           username: DevopsNimbus
           theme: orbit
           output: profile/git3d.svg
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify generated visualization
         shell: bash
@@ -44,6 +46,11 @@ jobs:
 
           if ! grep -q "DevopsNimbus" profile/git3d.svg; then
             echo "ERROR: Generated SVG does not contain DevopsNimbus."
+            exit 1
+          fi
+
+          if ! grep -q "<svg" profile/git3d.svg; then
+            echo "ERROR: Generated file is not an SVG."
             exit 1
           fi
 
@@ -80,3 +87,4 @@ jobs:
 
           echo "ERROR: Unable to push Git3D profile after 3 attempts."
           exit 1
+```
