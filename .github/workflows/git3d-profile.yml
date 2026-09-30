@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate Git3D visualization
-        uses: SandeepKomal/git3d-profile@main
+        uses: SandeepKomal/git3d-profile@e1757441d6b53521b60727233f0a9a13ea8c0394
         with:
           theme: orbit
           output: profile/git3d.svg
@@ -34,64 +34,41 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "Checking generated Git3D visualization..."
-
           test -s profile/git3d.svg
 
           if grep -q "testusername" profile/git3d.svg; then
-            echo "ERROR: Generated SVG still contains testusername."
+            echo "ERROR: testusername detected in generated SVG."
             exit 1
           fi
 
-          if ! grep -q "DevopsNimbus" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain the repository owner."
-            exit 1
-          fi
+          grep -q "<svg" profile/git3d.svg
+          grep -q "DevopsNimbus" profile/git3d.svg
+          grep -q "LIVE ACTIVITY" profile/git3d.svg
+          grep -q "PROFILE" profile/git3d.svg
+          grep -q "REPOSITORIES" profile/git3d.svg
+          grep -q "LANGUAGES" profile/git3d.svg
+          grep -q "ACTIVITY" profile/git3d.svg
 
-          if ! grep -q "<svg" profile/git3d.svg; then
-            echo "ERROR: Generated file is not an SVG."
-            exit 1
-          fi
-
-          if ! grep -q "LIVE ACTIVITY" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain the new activity summary."
-            exit 1
-          fi
-
-          if ! grep -q "PROFILE" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain the profile dashboard."
-            exit 1
-          fi
-
-          if ! grep -q "REPOSITORIES" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain the repositories dashboard."
-            exit 1
-          fi
-
-          if ! grep -q "LANGUAGES" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain the languages dashboard."
-            exit 1
-          fi
-
-          if ! grep -q "ACTIVITY" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain the activity dashboard."
-            exit 1
-          fi
-
-          echo "Git3D visualization verification passed."
+          echo "Git3D SVG validation passed."
 
       - name: Show generated visualization summary
         shell: bash
         run: |
           set -euo pipefail
 
-          echo "Generated file:"
+          echo "Generated SVG:"
           ls -lh profile/git3d.svg
 
           echo ""
-          echo "Git3D metadata:"
+          echo "SVG title:"
           grep -o '<title>[^<]*</title>' profile/git3d.svg || true
+
+          echo ""
+          echo "Activity:"
           grep -o 'LIVE ACTIVITY[^<]*' profile/git3d.svg || true
+
+          echo ""
+          echo "Key sections:"
           grep -o '<text[^>]*>PROFILE</text>' profile/git3d.svg || true
           grep -o '<text[^>]*>REPOSITORIES</text>' profile/git3d.svg || true
           grep -o '<text[^>]*>LANGUAGES</text>' profile/git3d.svg || true
@@ -122,7 +99,7 @@ jobs:
               exit 0
             fi
 
-            echo "Push attempt $attempt failed; refreshing remote and retrying..."
+            echo "Push attempt ${attempt} failed. Rebasing again..."
             git pull --rebase origin main
           done
 
