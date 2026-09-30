@@ -44,7 +44,7 @@ jobs:
           grep -q "<svg" profile/git3d.svg
           grep -q "DevopsNimbus" profile/git3d.svg
           grep -q "LIVE ACTIVITY" profile/git3d.svg
-          grep -q "PROFILE" profile/git3d.svg
+          grep -q "Git3D Profile" profile/git3d.svg
           grep -q "REPOSITORIES" profile/git3d.svg
           grep -q "LANGUAGES" profile/git3d.svg
           grep -q "ACTIVITY" profile/git3d.svg
@@ -69,7 +69,7 @@ jobs:
 
           echo ""
           echo "Key sections:"
-          grep -o '<text[^>]*>PROFILE</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>Git3D Profile</text>' profile/git3d.svg || true
           grep -o '<text[^>]*>REPOSITORIES</text>' profile/git3d.svg || true
           grep -o '<text[^>]*>LANGUAGES</text>' profile/git3d.svg || true
           grep -o '<text[^>]*>ACTIVITY</text>' profile/git3d.svg || true
