@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate Git3D V11 visualization
-        uses: SandeepKomal/git3d-profile@<V11-MERGED-COMMIT-SHA>
+        uses: SandeepKomal/git3d-profile@d4f85e48e6b8b4e16160531a2c5bda09c6fe17fc
         with:
           theme: orbit
           output: profile/git3d.svg
@@ -34,57 +34,40 @@ jobs:
         run: |
           set -euo pipefail
 
+          SVG="profile/git3d.svg"
+
           echo "========================================"
           echo "Validating Git3D V11 visualization"
           echo "========================================"
 
-          SVG="profile/git3d.svg"
-
-          # --------------------------------------------------
           # Basic SVG validation
-          # --------------------------------------------------
-
           test -s "$SVG"
-
           grep -q "<svg" "$SVG"
           grep -q "</svg>" "$SVG"
 
-          # --------------------------------------------------
           # Profile identity
-          # --------------------------------------------------
-
           grep -q "DevopsNimbus" "$SVG"
 
-          # --------------------------------------------------
           # Git3D identity
-          # --------------------------------------------------
-
           grep -q "Git3D" "$SVG"
           grep -q "Contribution Universe" "$SVG"
 
-          # --------------------------------------------------
-          # V11 orbital universe structure
-          # --------------------------------------------------
-
+          # V11 orbital universe
           grep -q 'data-role="orbital-system"' "$SVG"
           grep -q 'data-role="repository-nodes"' "$SVG"
           grep -q 'data-role="profile-core"' "$SVG"
+          grep -q 'data-role="profile-badge"' "$SVG"
+          grep -q 'data-role="depth-guides"' "$SVG"
+          grep -q 'data-role="universe-insights"' "$SVG"
+          grep -q 'data-role="profile-stats"' "$SVG"
 
-          # --------------------------------------------------
           # Activity insights
-          # --------------------------------------------------
-
           grep -q "TOP REPOSITORY" "$SVG"
           grep -q "TOP LANGUAGE" "$SVG"
           grep -q "PEAK DAILY ACTIVITY" "$SVG"
           grep -q "LONGEST STREAK" "$SVG"
 
-          # --------------------------------------------------
           # Profile statistics
-          # --------------------------------------------------
-
-          grep -q 'data-role="profile-stats"' "$SVG"
-
           grep -q "CONTRIBUTIONS" "$SVG"
           grep -q "REPOSITORIES" "$SVG"
           grep -q "STARS" "$SVG"
@@ -92,10 +75,7 @@ jobs:
           grep -q "COLLABORATION" "$SVG"
           grep -q "ACTIVITY SCORE" "$SVG"
 
-          # --------------------------------------------------
-          # Prevent accidental test/fixture data
-          # --------------------------------------------------
-
+          # Prevent test/fixture data
           if grep -q "testusername" "$SVG"; then
             echo "ERROR: testusername detected in generated SVG."
             exit 1
@@ -106,10 +86,7 @@ jobs:
             exit 1
           fi
 
-          # --------------------------------------------------
           # File sanity check
-          # --------------------------------------------------
-
           size=$(wc -c < "$SVG")
 
           if [ "$size" -lt 1000 ]; then
@@ -132,7 +109,7 @@ jobs:
 
           echo ""
           echo "SVG markers:"
-          grep -o 'data-role="[^"]*"' profile/git3d.svg | sort -u || true
+          grep -o 'data-role="[^\"]*"' profile/git3d.svg | sort -u || true
 
       - name: Commit updated visualization
         shell: bash
