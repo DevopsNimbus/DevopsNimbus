@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate Git3D V7 visualization
-        uses: SandeepKomal/git3d-profile@6f43995c6c0912a7e0d7aa6ea27f9c10dcf8b45c
+        uses: SandeepKomal/git3d-profile@27488d02d0341a56148caad8e972c5f38bea6694
         with:
           theme: orbit
           output: profile/git3d.svg
