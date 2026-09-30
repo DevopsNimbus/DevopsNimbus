@@ -22,8 +22,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Git3D V6 visualization
-        uses: SandeepKomal/git3d-profile@9445161b50005a5365b104c5ed494b090614963c
+      - name: Generate Git3D V7 visualization
+        uses: SandeepKomal/git3d-profile@6f43995c6c0912a7e0d7aa6ea27f9c10dcf8b45c
         with:
           theme: orbit
           output: profile/git3d.svg
@@ -34,7 +34,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "Validating Git3D V6 visualization..."
+          echo "========================================"
+          echo "Validating Git3D V7 visualization"
+          echo "========================================"
 
           test -s profile/git3d.svg
 
@@ -43,33 +45,53 @@ jobs:
             exit 1
           fi
 
+          # Basic SVG validation
           grep -q "<svg" profile/git3d.svg
+          grep -q "</svg>" profile/git3d.svg
+
+          # Profile identity
           grep -q "DevopsNimbus" profile/git3d.svg
 
-          # V6 identity
+          # Git3D V7 identity
           grep -q "GIT3D CONTRIBUTION UNIVERSE" profile/git3d.svg
           grep -q "365-DAY CONTRIBUTION LANDSCAPE" profile/git3d.svg
 
-          # V6 primary visualization
-          grep -q "CONTRIBUTION LANDSCAPE" profile/git3d.svg
-          grep -q "365 DAYS" profile/git3d.svg
-          grep -q "HEIGHT = DAILY CONTRIBUTION INTENSITY" profile/git3d.svg
+          # V7 contribution visualization
+          grep -q "CONTRIBUTION CITY" profile/git3d.svg
+          grep -q "365-DAY HISTORY" profile/git3d.svg
+          grep -q "HEIGHT = CONTRIBUTION INTENSITY" profile/git3d.svg
 
-          # Core visualization
+          # Terrain components
+          grep -q 'data-role="contribution-landscape"' profile/git3d.svg
+          grep -q 'data-role="terrain-floor"' profile/git3d.svg
+          grep -q 'data-role="terrain-columns"' profile/git3d.svg
+          grep -q 'data-role="terrain-peaks"' profile/git3d.svg
+          grep -q 'data-role="terrain-guides"' profile/git3d.svg
+          grep -q 'data-role="terrain-time"' profile/git3d.svg
+
+          # Activity core
           grep -q "ACTIVITY CORE" profile/git3d.svg
-          grep -q "data-role=\"contribution-landscape\"" profile/git3d.svg
-          grep -q "data-role=\"terrain-floor\"" profile/git3d.svg
-          grep -q "data-role=\"terrain-columns\"" profile/git3d.svg
-          grep -q "data-role=\"terrain-peaks\"" profile/git3d.svg
 
-          # Metrics
+          # Profile signal
+          grep -q "PROFILE SIGNAL" profile/git3d.svg
+          grep -q "CURRENT STREAK" profile/git3d.svg
+
+          # Primary metrics
           grep -q "CONTRIBUTIONS" profile/git3d.svg
           grep -q "ACTIVE DAYS" profile/git3d.svg
           grep -q "LONGEST STREAK" profile/git3d.svg
           grep -q "REPOSITORIES" profile/git3d.svg
           grep -q "ACTIVITY SCORE" profile/git3d.svg
 
-          echo "Git3D V6 SVG validation passed."
+          # Repository intelligence
+          grep -q "TOP REPOSITORY" profile/git3d.svg
+          grep -q "PEAK DAY" profile/git3d.svg
+
+          # Original renderer footer
+          grep -q "Generated locally by Git3D Profile" profile/git3d.svg
+
+          echo ""
+          echo "Git3D V7 SVG validation passed."
 
       - name: Show generated visualization summary
         shell: bash
@@ -77,7 +99,7 @@ jobs:
           set -euo pipefail
 
           echo "========================================"
-          echo "Git3D V6 Generated Visualization"
+          echo "Git3D V7 Generated Visualization"
           echo "========================================"
 
           echo ""
@@ -89,17 +111,22 @@ jobs:
           grep -o '<title>[^<]*</title>' profile/git3d.svg || true
 
           echo ""
-          echo "Visualization:"
+          echo "Git3D:"
           grep -o 'GIT3D CONTRIBUTION UNIVERSE' profile/git3d.svg || true
 
           echo ""
-          echo "Landscape:"
-          grep -o 'CONTRIBUTION LANDSCAPE' profile/git3d.svg || true
-          grep -o '365 DAYS' profile/git3d.svg || true
+          echo "Contribution visualization:"
+          grep -o 'CONTRIBUTION CITY' profile/git3d.svg || true
+          grep -o '365-DAY HISTORY' profile/git3d.svg || true
 
           echo ""
-          echo "Core:"
+          echo "Activity core:"
           grep -o 'ACTIVITY CORE' profile/git3d.svg || true
+
+          echo ""
+          echo "Profile signal:"
+          grep -o 'PROFILE SIGNAL' profile/git3d.svg || true
+          grep -o 'CURRENT STREAK' profile/git3d.svg || true
 
           echo ""
           echo "Metrics:"
@@ -111,7 +138,7 @@ jobs:
 
           echo ""
           echo "========================================"
-          echo "Git3D V6 validation complete"
+          echo "Git3D V7 summary complete"
           echo "========================================"
 
       - name: Commit Git3D visualization
