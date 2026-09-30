@@ -22,8 +22,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Git3D V8 visualization
-        uses: SandeepKomal/git3d-profile@27488d02d0341a56148caad8e972c5f38bea6694
+      - name: Generate Git3D V9 visualization
+        uses: SandeepKomal/git3d-profile@a22e7b324dd9348db46b6c55b754a1fe2fc9b734
         with:
           theme: orbit
           output: profile/git3d.svg
@@ -35,128 +35,69 @@ jobs:
           set -euo pipefail
 
           echo "========================================"
-          echo "Validating Git3D V8 visualization"
+          echo "Validating Git3D V9 visualization"
           echo "========================================"
 
+          # File must exist and contain SVG content
           test -s profile/git3d.svg
+          grep -q "<svg" profile/git3d.svg
+          grep -q "</svg>" profile/git3d.svg
 
+          # Correct profile identity
+          grep -q "DevopsNimbus" profile/git3d.svg
+
+          # V9 identity
+          grep -q "GIT3D" profile/git3d.svg
+          grep -q "CONTRIBUTION UNIVERSE" profile/git3d.svg
+          grep -q "365-DAY ACTIVITY" profile/git3d.svg
+
+          # V9 contribution matrix
+          grep -q "CONTRIBUTION MATRIX" profile/git3d.svg
+          grep -q "365 DAYS" profile/git3d.svg
+          grep -q "X = TIME" profile/git3d.svg
+          grep -q "Y = WEEKDAY" profile/git3d.svg
+          grep -q "Z = CONTRIBUTION HEIGHT" profile/git3d.svg
+          grep -q "DAILY INTENSITY" profile/git3d.svg
+
+          # V9 matrix structure
+          grep -q 'data-role="contribution-matrix"' profile/git3d.svg
+          grep -q 'data-role="matrix-floor"' profile/git3d.svg
+          grep -q 'data-role="matrix-guides"' profile/git3d.svg
+          grep -q 'data-role="matrix-columns"' profile/git3d.svg
+          grep -q 'data-role="matrix-peaks"' profile/git3d.svg
+          grep -q 'data-role="matrix-time"' profile/git3d.svg
+          grep -q 'data-role="contribution-cell"' profile/git3d.svg
+
+          # Profile metrics
+          grep -q "CONTRIBUTIONS" profile/git3d.svg
+          grep -q "ACTIVE DAYS" profile/git3d.svg
+          grep -q "CURRENT STREAK" profile/git3d.svg
+          grep -q "LONGEST STREAK" profile/git3d.svg
+          grep -q "REPOSITORIES" profile/git3d.svg
+          grep -q "ACTIVITY SCORE" profile/git3d.svg
+
+          # V9 insights
+          grep -q "TOP REPOSITORY" profile/git3d.svg
+          grep -q "PEAK DAY" profile/git3d.svg
+          grep -q "HEIGHT + LIGHT = DAILY ACTIVITY" profile/git3d.svg
+
+          # Prevent accidental test/default data
           if grep -q "testusername" profile/git3d.svg; then
             echo "ERROR: testusername detected in generated SVG."
             exit 1
           fi
 
-          # Basic SVG validation
-          grep -q "<svg" profile/git3d.svg
-          grep -q "</svg>" profile/git3d.svg
+          # Ensure the generated file is not empty or suspiciously small
+          size=$(wc -c < profile/git3d.svg)
+          if [ "$size" -lt 1000 ]; then
+            echo "ERROR: Generated SVG is unexpectedly small: ${size} bytes"
+            exit 1
+          fi
 
-          # Profile identity
-          grep -q "DevopsNimbus" profile/git3d.svg
+          echo "Git3D V9 SVG validation passed."
+          echo "Generated SVG size: ${size} bytes"
 
-          # Git3D V8 identity
-          grep -q "GIT3D CONTRIBUTION UNIVERSE" profile/git3d.svg
-          grep -q "365-DAY 3D CONTRIBUTION MATRIX" profile/git3d.svg
-
-          # V8 contribution matrix
-          grep -q "3D CONTRIBUTION MATRIX" profile/git3d.svg
-          grep -q "365 DAYS" profile/git3d.svg
-          grep -q "53 WEEKS" profile/git3d.svg
-          grep -q "7 DAYS" profile/git3d.svg
-          grep -q "HEIGHT = DAILY CONTRIBUTIONS" profile/git3d.svg
-          grep -q "INTENSITY" profile/git3d.svg
-          grep -q "LOW → HIGH" profile/git3d.svg
-
-          # Terrain components
-          grep -q 'data-role="terrain-floor"' profile/git3d.svg
-          grep -q 'data-role="terrain-guides"' profile/git3d.svg
-          grep -q 'data-role="terrain-columns"' profile/git3d.svg
-          grep -q 'data-role="terrain-peaks"' profile/git3d.svg
-          grep -q 'data-role="terrain-time"' profile/git3d.svg
-
-          # Activity pulse
-          grep -q 'data-role="activity-pulse"' profile/git3d.svg
-
-          # Activity core
-          grep -q "ACTIVITY CORE" profile/git3d.svg
-
-          # Profile signal
-          grep -q "PROFILE SIGNAL" profile/git3d.svg
-          grep -q "CURRENT STREAK" profile/git3d.svg
-
-          # Primary metrics
-          grep -q "CONTRIBUTIONS" profile/git3d.svg
-          grep -q "ACTIVE DAYS" profile/git3d.svg
-          grep -q "LONGEST STREAK" profile/git3d.svg
-          grep -q "REPOSITORIES" profile/git3d.svg
-          grep -q "ACTIVITY SCORE" profile/git3d.svg
-
-          # Repository intelligence
-          grep -q "TOP REPOSITORY" profile/git3d.svg
-          grep -q "PEAK DAY" profile/git3d.svg
-
-          # Timeline
-          grep -q "365-DAY CONTRIBUTION HISTORY" profile/git3d.svg
-          grep -q "RECENT" profile/git3d.svg
-
-          # Original renderer footer
-          grep -q "Generated locally by Git3D Profile" profile/git3d.svg
-
-          echo ""
-          echo "Git3D V8 SVG validation passed."
-
-      - name: Show generated visualization summary
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          echo "========================================"
-          echo "Git3D V8 Generated Visualization"
-          echo "========================================"
-
-          echo ""
-          echo "Generated SVG:"
-          ls -lh profile/git3d.svg
-
-          echo ""
-          echo "SVG title:"
-          grep -o '<title>[^<]*</title>' profile/git3d.svg || true
-
-          echo ""
-          echo "Git3D:"
-          grep -o 'GIT3D CONTRIBUTION UNIVERSE' profile/git3d.svg || true
-
-          echo ""
-          echo "Contribution matrix:"
-          grep -o '3D CONTRIBUTION MATRIX' profile/git3d.svg || true
-          grep -o '365 DAYS' profile/git3d.svg || true
-          grep -o '53 WEEKS' profile/git3d.svg || true
-
-          echo ""
-          echo "Activity pulse:"
-          grep -o 'data-role="activity-pulse"' profile/git3d.svg || true
-
-          echo ""
-          echo "Activity core:"
-          grep -o 'ACTIVITY CORE' profile/git3d.svg || true
-
-          echo ""
-          echo "Profile signal:"
-          grep -o 'PROFILE SIGNAL' profile/git3d.svg || true
-          grep -o 'CURRENT STREAK' profile/git3d.svg || true
-
-          echo ""
-          echo "Metrics:"
-          grep -o '<text[^>]*>CONTRIBUTIONS</text>' profile/git3d.svg || true
-          grep -o '<text[^>]*>ACTIVE DAYS</text>' profile/git3d.svg || true
-          grep -o '<text[^>]*>LONGEST STREAK</text>' profile/git3d.svg || true
-          grep -o '<text[^>]*>REPOSITORIES</text>' profile/git3d.svg || true
-          grep -o '<text[^>]*>ACTIVITY SCORE</text>' profile/git3d.svg || true
-
-          echo ""
-          echo "========================================"
-          echo "Git3D V8 summary complete"
-          echo "========================================"
-
-      - name: Commit Git3D visualization
+      - name: Commit updated visualization
         shell: bash
         run: |
           set -euo pipefail
@@ -167,23 +108,9 @@ jobs:
           git add profile/git3d.svg
 
           if git diff --cached --quiet; then
-            echo "No Git3D changes."
+            echo "No Git3D visualization changes detected."
             exit 0
           fi
 
-          git commit -m "chore: refresh Git3D profile"
-
-          git pull --rebase origin main
-
-          for attempt in 1 2 3; do
-            if git push origin main; then
-              echo "Git3D profile pushed successfully."
-              exit 0
-            fi
-
-            echo "Push attempt ${attempt} failed. Rebasing again..."
-            git pull --rebase origin main
-          done
-
-          echo "ERROR: Unable to push Git3D profile after 3 attempts."
-          exit 1
+          git commit -m "chore: update Git3D profile visualization"
+          git push
