@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Git3D v2 visualization
+      - name: Generate Git3D v3 visualization
         uses: SandeepKomal/git3d-profile@main
         with:
           theme: orbit
@@ -36,40 +36,39 @@ jobs:
 
           echo "Checking generated Git3D visualization..."
 
-          # Verify the file exists and is not empty.
           test -s profile/git3d.svg
 
-          # Prevent stale test data from being generated.
           if grep -q "testusername" profile/git3d.svg; then
             echo "ERROR: Generated SVG still contains testusername."
             exit 1
           fi
 
-          # Verify the repository owner is represented.
           if ! grep -q "DevopsNimbus" profile/git3d.svg; then
             echo "ERROR: Generated SVG does not contain the repository owner."
             exit 1
           fi
 
-          # Verify that the output is actually SVG.
           if ! grep -q "<svg" profile/git3d.svg; then
             echo "ERROR: Generated file is not an SVG."
             exit 1
           fi
 
-          # Verify that the v2 renderer generated the activity score.
           if ! grep -q "activity score" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain the v2 activity score."
+            echo "ERROR: Generated SVG does not contain the activity score."
             exit 1
           fi
 
-          # Verify that the v2 renderer generated the activity universe.
           if ! grep -q "orbit universe" profile/git3d.svg; then
             echo "ERROR: Generated SVG does not contain the orbit universe."
             exit 1
           fi
 
-          echo "Git3D v2 SVG verification passed."
+          if ! grep -q "depth-based GitHub activity universe" profile/git3d.svg; then
+            echo "ERROR: Generated SVG does not contain Orbit v3 depth metadata."
+            exit 1
+          fi
+
+          echo "Git3D v3 SVG verification passed."
 
       - name: Show generated visualization summary
         shell: bash
@@ -85,7 +84,50 @@ jobs:
           grep -o '· [0-9]* repos · [0-9]* followers · [0-9]* following' profile/git3d.svg || true
           grep -o 'activity score[^<]*' profile/git3d.svg || true
 
-      - name: Commit Git3D visualization
+          echo ""
+          echo "Orbit v3 markers:"
+          grep -o 'depth-based GitHub activity universe' profile/git3d.svg || true
+          grep -o 'depthHaze' profile/git3d.svg || true
+
+      - name: Refresh repository before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch origin main
+
+          echo "Resetting workspace to latest origin/main..."
+
+          git reset --hard origin/main
+
+      - name: Regenerate Git3D v3 visualization
+        uses: SandeepKomal/git3d-profile@main
+        with:
+          theme: orbit
+          output: profile/git3d.svg
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify final Git3D visualization
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s profile/git3d.svg
+
+          grep -q "<svg" profile/git3d.svg
+          grep -q "DevopsNimbus" profile/git3d.svg
+          grep -q "activity score" profile/git3d.svg
+          grep -q "orbit universe" profile/git3d.svg
+          grep -q "depth-based GitHub activity universe" profile/git3d.svg
+
+          if grep -q "testusername" profile/git3d.svg; then
+            echo "ERROR: Generated SVG contains testusername."
+            exit 1
+          fi
+
+          echo "Final Git3D v3 visualization verified."
+
+      - name: Commit and push Git3D visualization
         shell: bash
         run: |
           set -euo pipefail
@@ -100,19 +142,8 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: refresh Git3D v2 profile"
+          git commit -m "chore: refresh Git3D profile"
 
-          git pull --rebase origin main
+          git push origin HEAD:main
 
-          for attempt in 1 2 3; do
-            if git push origin main; then
-              echo "Git3D v2 profile pushed successfully."
-              exit 0
-            fi
-
-            echo "Push attempt $attempt failed; refreshing remote and retrying..."
-            git pull --rebase origin main
-          done
-
-          echo "ERROR: Unable to push Git3D profile after 3 attempts."
-          exit 1
+          echo "Git3D v3 profile pushed successfully."
