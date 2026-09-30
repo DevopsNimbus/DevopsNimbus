@@ -22,8 +22,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Git3D V9 visualization
-        uses: SandeepKomal/git3d-profile@a22e7b324dd9348db46b6c55b754a1fe2fc9b734
+      - name: Generate Git3D V10 visualization
+        uses: SandeepKomal/git3d-profile@b2423a757b44f6fb13282a16546610f4ad5e07a5
         with:
           theme: orbit
           output: profile/git3d.svg
@@ -35,66 +35,85 @@ jobs:
           set -euo pipefail
 
           echo "========================================"
-          echo "Validating Git3D V9 visualization"
+          echo "Validating Git3D V10 visualization"
           echo "========================================"
 
-          # File must exist and contain SVG content
+          # ---------------------------------------------------------
+          # Basic SVG validation
+          # ---------------------------------------------------------
           test -s profile/git3d.svg
+
           grep -q "<svg" profile/git3d.svg
           grep -q "</svg>" profile/git3d.svg
 
+          # ---------------------------------------------------------
           # Correct profile identity
+          # ---------------------------------------------------------
           grep -q "DevopsNimbus" profile/git3d.svg
 
-          # V9 identity
+          # ---------------------------------------------------------
+          # Git3D V10 identity
+          # ---------------------------------------------------------
           grep -q "GIT3D" profile/git3d.svg
           grep -q "CONTRIBUTION UNIVERSE" profile/git3d.svg
-          grep -q "365-DAY ACTIVITY" profile/git3d.svg
+          grep -q "CODE" profile/git3d.svg
+          grep -q "AUTOMATE" profile/git3d.svg
+          grep -q "SECURE" profile/git3d.svg
+          grep -q "DEPLOY" profile/git3d.svg
+          grep -q "OBSERVE" profile/git3d.svg
 
-          # V9 contribution matrix
-          grep -q "CONTRIBUTION MATRIX" profile/git3d.svg
-          grep -q "365 DAYS" profile/git3d.svg
-          grep -q "X = TIME" profile/git3d.svg
-          grep -q "Y = WEEKDAY" profile/git3d.svg
-          grep -q "Z = CONTRIBUTION HEIGHT" profile/git3d.svg
-          grep -q "DAILY INTENSITY" profile/git3d.svg
+          # ---------------------------------------------------------
+          # V10 orbital universe
+          # ---------------------------------------------------------
+          grep -q 'data-role="orbital-system"' profile/git3d.svg
+          grep -q 'data-role="repository-nodes"' profile/git3d.svg
+          grep -q 'data-role="profile-core"' profile/git3d.svg
 
-          # V9 matrix structure
-          grep -q 'data-role="contribution-matrix"' profile/git3d.svg
-          grep -q 'data-role="matrix-floor"' profile/git3d.svg
-          grep -q 'data-role="matrix-guides"' profile/git3d.svg
-          grep -q 'data-role="matrix-columns"' profile/git3d.svg
-          grep -q 'data-role="matrix-peaks"' profile/git3d.svg
-          grep -q 'data-role="matrix-time"' profile/git3d.svg
-          grep -q 'data-role="contribution-cell"' profile/git3d.svg
-
-          # Profile metrics
-          grep -q "CONTRIBUTIONS" profile/git3d.svg
-          grep -q "ACTIVE DAYS" profile/git3d.svg
-          grep -q "CURRENT STREAK" profile/git3d.svg
+          # ---------------------------------------------------------
+          # Repository information
+          # ---------------------------------------------------------
+          grep -q "TOP REPOSITORY" profile/git3d.svg
+          grep -q "TOP LANGUAGE" profile/git3d.svg
+          grep -q "PEAK DAILY ACTIVITY" profile/git3d.svg
           grep -q "LONGEST STREAK" profile/git3d.svg
+
+          # ---------------------------------------------------------
+          # Profile statistics
+          # ---------------------------------------------------------
+          grep -q 'data-role="profile-stats"' profile/git3d.svg
+
+          grep -q "CONTRIBUTIONS" profile/git3d.svg
           grep -q "REPOSITORIES" profile/git3d.svg
+          grep -q "STARS" profile/git3d.svg
+          grep -q "FORKS" profile/git3d.svg
+          grep -q "COLLABORATION" profile/git3d.svg
           grep -q "ACTIVITY SCORE" profile/git3d.svg
 
-          # V9 insights
-          grep -q "TOP REPOSITORY" profile/git3d.svg
-          grep -q "PEAK DAY" profile/git3d.svg
-          grep -q "HEIGHT + LIGHT = DAILY ACTIVITY" profile/git3d.svg
-
+          # ---------------------------------------------------------
           # Prevent accidental test/default data
+          # ---------------------------------------------------------
           if grep -q "testusername" profile/git3d.svg; then
             echo "ERROR: testusername detected in generated SVG."
             exit 1
           fi
 
-          # Ensure the generated file is not empty or suspiciously small
+          if grep -q "octo<test" profile/git3d.svg; then
+            echo "ERROR: test fixture data detected in generated SVG."
+            exit 1
+          fi
+
+          # ---------------------------------------------------------
+          # File size sanity check
+          # ---------------------------------------------------------
           size=$(wc -c < profile/git3d.svg)
+
           if [ "$size" -lt 1000 ]; then
             echo "ERROR: Generated SVG is unexpectedly small: ${size} bytes"
             exit 1
           fi
 
-          echo "Git3D V9 SVG validation passed."
+          echo ""
+          echo "Git3D V10 SVG validation passed."
           echo "Generated SVG size: ${size} bytes"
 
       - name: Commit updated visualization
