@@ -22,8 +22,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Git3D visualization
-        uses: SandeepKomal/git3d-profile@736ec5fec12eb3f56d921b07287eb032be2657f2
+      - name: Generate Git3D V5 visualization
+        uses: SandeepKomal/git3d-profile@122732232a92781ce78d3c07d78e7b826fbf6acb
         with:
           theme: orbit
           output: profile/git3d.svg
@@ -34,6 +34,8 @@ jobs:
         run: |
           set -euo pipefail
 
+          echo "Validating Git3D V5 visualization..."
+
           test -s profile/git3d.svg
 
           if grep -q "testusername" profile/git3d.svg; then
@@ -43,19 +45,26 @@ jobs:
 
           grep -q "<svg" profile/git3d.svg
           grep -q "DevopsNimbus" profile/git3d.svg
-          grep -q "LIVE ACTIVITY" profile/git3d.svg
-          grep -q "Git3D Profile" profile/git3d.svg
+          grep -q "GIT3D CONTRIBUTION UNIVERSE" profile/git3d.svg
+          grep -q "CONTRIBUTION TERRAIN" profile/git3d.svg
+          grep -q "ACTIVITY CORE" profile/git3d.svg
+          grep -q "CONTRIBUTIONS" profile/git3d.svg
+          grep -q "ACTIVE DAYS" profile/git3d.svg
+          grep -q "LONGEST STREAK" profile/git3d.svg
           grep -q "REPOSITORIES" profile/git3d.svg
-          grep -q "LANGUAGES" profile/git3d.svg
-          grep -q "ACTIVITY" profile/git3d.svg
 
-          echo "Git3D SVG validation passed."
+          echo "Git3D V5 SVG validation passed."
 
       - name: Show generated visualization summary
         shell: bash
         run: |
           set -euo pipefail
 
+          echo "========================================"
+          echo "Git3D V5 Generated Visualization"
+          echo "========================================"
+
+          echo ""
           echo "Generated SVG:"
           ls -lh profile/git3d.svg
 
@@ -64,15 +73,22 @@ jobs:
           grep -o '<title>[^<]*</title>' profile/git3d.svg || true
 
           echo ""
-          echo "Activity:"
-          grep -o 'LIVE ACTIVITY[^<]*' profile/git3d.svg || true
+          echo "Visualization:"
+          grep -o 'GIT3D CONTRIBUTION UNIVERSE' profile/git3d.svg || true
 
           echo ""
           echo "Key sections:"
-          grep -o '<text[^>]*>Git3D Profile</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>CONTRIBUTION TERRAIN</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>ACTIVITY CORE</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>CONTRIBUTIONS</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>ACTIVE DAYS</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>LONGEST STREAK</text>' profile/git3d.svg || true
           grep -o '<text[^>]*>REPOSITORIES</text>' profile/git3d.svg || true
-          grep -o '<text[^>]*>LANGUAGES</text>' profile/git3d.svg || true
-          grep -o '<text[^>]*>ACTIVITY</text>' profile/git3d.svg || true
+
+          echo ""
+          echo "========================================"
+          echo "Git3D V5 validation complete"
+          echo "========================================"
 
       - name: Commit Git3D visualization
         shell: bash
