@@ -1,4 +1,3 @@
-
 name: Git3D Profile
 
 on:
@@ -19,18 +18,16 @@ jobs:
 
     steps:
       - name: Checkout profile repository
-        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f4a348a # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Generate Git3D visualization
-        uses: SandeepKomal/git3d-profile@feature/profile-readme-integration
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: SandeepKomal/git3d-profile@v0.1.0
         with:
-          username: DevopsNimbus
           theme: orbit
           output: profile/git3d.svg
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify generated visualization
         shell: bash
@@ -45,7 +42,7 @@ jobs:
           fi
 
           if ! grep -q "DevopsNimbus" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain DevopsNimbus."
+            echo "ERROR: Generated SVG does not contain the repository owner."
             exit 1
           fi
 
