@@ -22,31 +22,29 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Git3D Orbit v3
+      - name: Generate Git3D visualization
         uses: SandeepKomal/git3d-profile@main
         with:
           theme: orbit
           output: profile/git3d.svg
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify Git3D Orbit v3
+      - name: Verify generated visualization
         shell: bash
         run: |
           set -euo pipefail
 
-          echo "========================================"
-          echo "Verifying Git3D Orbit v3"
-          echo "========================================"
+          echo "Checking generated Git3D visualization..."
 
           test -s profile/git3d.svg
 
           if grep -q "testusername" profile/git3d.svg; then
-            echo "ERROR: Generated SVG contains testusername."
+            echo "ERROR: Generated SVG still contains testusername."
             exit 1
           fi
 
           if ! grep -q "DevopsNimbus" profile/git3d.svg; then
-            echo "ERROR: Generated SVG does not contain DevopsNimbus."
+            echo "ERROR: Generated SVG does not contain the repository owner."
             exit 1
           fi
 
@@ -55,139 +53,51 @@ jobs:
             exit 1
           fi
 
-          if ! grep -q "orbit universe" profile/git3d.svg; then
-            echo "ERROR: Orbit universe marker is missing."
+          if ! grep -q "LIVE ACTIVITY" profile/git3d.svg; then
+            echo "ERROR: Generated SVG does not contain the new activity summary."
             exit 1
           fi
 
-          if ! grep -q "depth-based GitHub activity universe" profile/git3d.svg; then
-            echo "ERROR: Orbit v3 depth renderer is missing."
-            exit 1
-          fi
-
-          if ! grep -q "depthHaze" profile/git3d.svg; then
-            echo "ERROR: Orbit v3 depth haze is missing."
-            exit 1
-          fi
-
-          # PR #24 polished renderer checks.
           if ! grep -q "PROFILE" profile/git3d.svg; then
-            echo "ERROR: Profile statistics section is missing."
+            echo "ERROR: Generated SVG does not contain the profile dashboard."
             exit 1
           fi
 
           if ! grep -q "REPOSITORIES" profile/git3d.svg; then
-            echo "ERROR: Repository statistics section is missing."
+            echo "ERROR: Generated SVG does not contain the repositories dashboard."
             exit 1
           fi
 
           if ! grep -q "LANGUAGES" profile/git3d.svg; then
-            echo "ERROR: Languages section is missing."
+            echo "ERROR: Generated SVG does not contain the languages dashboard."
             exit 1
           fi
 
           if ! grep -q "ACTIVITY" profile/git3d.svg; then
-            echo "ERROR: Activity section is missing."
+            echo "ERROR: Generated SVG does not contain the activity dashboard."
             exit 1
           fi
 
-          if ! grep -q "repoSphere" profile/git3d.svg; then
-            echo "ERROR: Repository sphere gradients are missing."
-            exit 1
-          fi
+          echo "Git3D visualization verification passed."
 
-          echo ""
-          echo "Git3D Orbit v3 verification passed."
-
-      - name: Show Git3D summary
+      - name: Show generated visualization summary
         shell: bash
         run: |
           set -euo pipefail
 
-          echo "========================================"
-          echo "Git3D Orbit v3 Summary"
-          echo "========================================"
-
-          echo ""
           echo "Generated file:"
           ls -lh profile/git3d.svg
 
           echo ""
-          echo "Profile:"
+          echo "Git3D metadata:"
           grep -o '<title>[^<]*</title>' profile/git3d.svg || true
+          grep -o 'LIVE ACTIVITY[^<]*' profile/git3d.svg || true
+          grep -o '<text[^>]*>PROFILE</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>REPOSITORIES</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>LANGUAGES</text>' profile/git3d.svg || true
+          grep -o '<text[^>]*>ACTIVITY</text>' profile/git3d.svg || true
 
-          echo ""
-          echo "Profile metrics:"
-          grep -o '[0-9]* repos · [0-9]* followers · [0-9]* following · [0-9]* activity score' \
-            profile/git3d.svg || true
-
-          echo ""
-          echo "Renderer:"
-          grep -o 'orbit universe' profile/git3d.svg || true
-          grep -o 'depth-based GitHub activity universe' profile/git3d.svg || true
-
-          echo ""
-          echo "Polished layout:"
-          grep -o 'PROFILE' profile/git3d.svg || true
-          grep -o 'REPOSITORIES' profile/git3d.svg || true
-          grep -o 'LANGUAGES' profile/git3d.svg || true
-          grep -o 'ACTIVITY' profile/git3d.svg || true
-
-      # Refresh main before committing the generated artifact.
-      # This prevents conflicts with an older generated SVG.
-      - name: Refresh repository
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          echo "Fetching latest main..."
-
-          git fetch origin main
-
-          echo "Resetting workspace to latest origin/main..."
-
-          git reset --hard origin/main
-
-      # Generate again after refreshing main.
-      - name: Regenerate Git3D Orbit v3
-        uses: SandeepKomal/git3d-profile@main
-        with:
-          theme: orbit
-          output: profile/git3d.svg
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Final Git3D verification
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          echo "Performing final verification..."
-
-          test -s profile/git3d.svg
-
-          grep -q "<svg" profile/git3d.svg
-          grep -q "DevopsNimbus" profile/git3d.svg
-          grep -q "orbit universe" profile/git3d.svg
-          grep -q "depth-based GitHub activity universe" profile/git3d.svg
-          grep -q "depthHaze" profile/git3d.svg
-
-          # PR #24 layout.
-          grep -q "PROFILE" profile/git3d.svg
-          grep -q "REPOSITORIES" profile/git3d.svg
-          grep -q "LANGUAGES" profile/git3d.svg
-          grep -q "ACTIVITY" profile/git3d.svg
-
-          # PR #24 3D repository spheres.
-          grep -q "repoSphere" profile/git3d.svg
-
-          if grep -q "testusername" profile/git3d.svg; then
-            echo "ERROR: Final SVG contains testusername."
-            exit 1
-          fi
-
-          echo "Final Git3D Orbit v3 verification passed."
-
-      - name: Commit and push Git3D visualization
+      - name: Commit Git3D visualization
         shell: bash
         run: |
           set -euo pipefail
@@ -198,15 +108,23 @@ jobs:
           git add profile/git3d.svg
 
           if git diff --cached --quiet; then
-            echo "No Git3D changes detected."
+            echo "No Git3D changes."
             exit 0
           fi
 
-          git commit -m "chore: refresh Git3D Orbit v3 profile"
+          git commit -m "chore: refresh Git3D profile"
 
-          git push origin HEAD:main
+          git pull --rebase origin main
 
-          echo ""
-          echo "========================================"
-          echo "Git3D Orbit v3 pushed successfully"
-          echo "========================================"
+          for attempt in 1 2 3; do
+            if git push origin main; then
+              echo "Git3D profile pushed successfully."
+              exit 0
+            fi
+
+            echo "Push attempt $attempt failed; refreshing remote and retrying..."
+            git pull --rebase origin main
+          done
+
+          echo "ERROR: Unable to push Git3D profile after 3 attempts."
+          exit 1
