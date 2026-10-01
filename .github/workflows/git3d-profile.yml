@@ -1,18 +1,20 @@
-name: Git3D Premium Theme Validation
+name: Git3D Premium Profile
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "17 18 * * *"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: git3d-premium-validation
+  group: git3d-profile
   cancel-in-progress: false
 
 jobs:
-  generate-and-validate:
-    name: Validate ${{ matrix.theme }} theme
+  generate:
+    name: Generate ${{ matrix.theme }} Git3D
     runs-on: ubuntu-latest
 
     strategy:
@@ -25,7 +27,7 @@ jobs:
             output: profile/git3d-light.svg
 
     steps:
-      - name: Checkout DevopsNimbus
+      - name: Checkout repository
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
         with:
           fetch-depth: 0
@@ -38,7 +40,7 @@ jobs:
           output: ${{ matrix.output }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Validate generated SVG
+      - name: Validate Git3D visualization
         shell: bash
         env:
           SVG: ${{ matrix.output }}
@@ -47,54 +49,42 @@ jobs:
           set -euo pipefail
 
           echo "========================================"
-          echo "Git3D Premium Theme Validation"
-          echo "Theme: ${THEME}"
-          echo "File:  ${SVG}"
+          echo "Validating Git3D ${THEME} theme"
+          echo "File: ${SVG}"
           echo "========================================"
 
-          echo ""
-          echo "1. Checking file exists..."
           test -f "$SVG"
-
-          echo "2. Checking file is not empty..."
           test -s "$SVG"
 
-          echo "3. Checking SVG structure..."
           grep -q "<svg" "$SVG"
           grep -q "</svg>" "$SVG"
 
-          echo "4. Checking profile identity..."
+          # Identity
           grep -q "DevopsNimbus" "$SVG"
           grep -q "Git3D" "$SVG"
 
-          echo "5. Checking Contribution Observatory..."
+          # V12/V13 Observatory
           grep -q "Contribution Observatory" "$SVG"
           grep -q "CONTRIBUTION" "$SVG"
           grep -q "OBSERVATORY" "$SVG"
 
-          echo "6. Checking observatory structure..."
+          # Structural markers
           grep -q 'data-role="observatory-stage"' "$SVG"
           grep -q 'data-role="perspective-grid"' "$SVG"
           grep -q 'data-role="contribution-terrain"' "$SVG"
-
-          echo "7. Checking repository visualization..."
           grep -q 'data-role="repository-nodes"' "$SVG"
           grep -q 'data-role="repository-node"' "$SVG"
-
-          echo "8. Checking profile core..."
           grep -q 'data-role="profile-core"' "$SVG"
           grep -q 'data-role="profile-badge"' "$SVG"
-
-          echo "9. Checking statistics..."
           grep -q 'data-role="profile-stats"' "$SVG"
           grep -q 'data-role="stat-card"' "$SVG"
 
-          echo "10. Checking activity telemetry..."
+          # Activity telemetry
           grep -q "TOP REPOSITORY" "$SVG"
           grep -q "TOP LANGUAGE" "$SVG"
           grep -q "PEAK / STREAK" "$SVG"
 
-          echo "11. Checking profile metrics..."
+          # Profile metrics
           grep -q "CONTRIBUTIONS" "$SVG"
           grep -q "REPOSITORIES" "$SVG"
           grep -q "STARS" "$SVG"
@@ -102,101 +92,135 @@ jobs:
           grep -q "COLLABORATION" "$SVG"
           grep -q "ACTIVITY SCORE" "$SVG"
 
-          echo "12. Checking for old V11 presentation..."
+          # Ensure old visual hasn't leaked back
           if grep -q "DELIVERY SYSTEM" "$SVG"; then
-            echo "ERROR: Old DELIVERY SYSTEM content detected"
+            echo "ERROR: DELIVERY SYSTEM detected"
             exit 1
           fi
 
           if grep -q "CONTRIBUTION MATRIX" "$SVG"; then
-            echo "ERROR: Old CONTRIBUTION MATRIX content detected"
+            echo "ERROR: CONTRIBUTION MATRIX detected"
             exit 1
           fi
 
-          echo "13. Checking for test fixture leakage..."
+          # Ensure fixtures haven't leaked
           if grep -q "testusername" "$SVG"; then
             echo "ERROR: testusername detected"
             exit 1
           fi
 
           if grep -q "octo&lt;test" "$SVG"; then
-            echo "ERROR: octo<test fixture detected"
+            echo "ERROR: octo<test detected"
             exit 1
           fi
 
-          echo "14. Checking SVG size..."
           SIZE=$(wc -c < "$SVG")
 
-          echo "Generated SVG size: ${SIZE} bytes"
+          echo "SVG size: ${SIZE} bytes"
 
           if [ "$SIZE" -lt 1000 ]; then
-            echo "ERROR: SVG is suspiciously small"
+            echo "ERROR: SVG is too small"
             exit 1
           fi
 
-          echo ""
-          echo "========================================"
-          echo "VALIDATION PASSED"
-          echo "Theme: ${THEME}"
-          echo "Size:  ${SIZE} bytes"
-          echo "========================================"
+          echo "Git3D ${THEME} validation PASSED."
 
-      - name: Show SVG metadata
-        shell: bash
-        run: |
-          echo "Generated file:"
-          ls -lh "${{ matrix.output }}"
-
-          echo ""
-          echo "Detected data roles:"
-          grep -o 'data-role="[^"]*"' "${{ matrix.output }}" \
-            | sort -u \
-            || true
-
-      - name: Upload generated visualization
+      - name: Upload generated theme
         uses: actions/upload-artifact@v4
         with:
-          name: git3d-${{ matrix.theme }}-visualization
+          name: git3d-${{ matrix.theme }}
           path: ${{ matrix.output }}
           if-no-files-found: error
           retention-days: 14
 
-  integration-summary:
-    name: Git3D Integration Summary
+  publish:
+    name: Publish Git3D profile
     runs-on: ubuntu-latest
-    needs: generate-and-validate
-    if: always()
+    needs: generate
 
     steps:
-      - name: Report validation result
+      - name: Checkout repository
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Download dark visualization
+        uses: actions/download-artifact@v4
+        with:
+          name: git3d-dark
+          path: generated/dark
+
+      - name: Download light visualization
+        uses: actions/download-artifact@v4
+        with:
+          name: git3d-light
+          path: generated/light
+
+      - name: Publish generated profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p profile
+
+          # Main README visualization
+          cp generated/dark/git3d-dark.svg profile/git3d.svg
+
+          # Alternate premium light theme
+          cp generated/light/git3d-light.svg profile/git3d-light.svg
+
+          echo "Published files:"
+          ls -lh profile/git3d.svg
+          ls -lh profile/git3d-light.svg
+
+      - name: Validate published README target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s profile/git3d.svg
+          grep -q "<svg" profile/git3d.svg
+          grep -q "DevopsNimbus" profile/git3d.svg
+          grep -q "Contribution Observatory" profile/git3d.svg
+
+          test -s profile/git3d-light.svg
+          grep -q "<svg" profile/git3d-light.svg
+          grep -q "DevopsNimbus" profile/git3d-light.svg
+          grep -q "Contribution Observatory" profile/git3d-light.svg
+
+          grep -q '\./profile/git3d\.svg' README.md
+
+          echo "README target and published SVGs are valid."
+
+      - name: Commit updated Git3D profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add profile/git3d.svg profile/git3d-light.svg
+
+          if git diff --cached --quiet; then
+            echo "No Git3D profile changes detected."
+            exit 0
+          fi
+
+          git commit -m "chore: update Git3D premium profile"
+          git push origin HEAD:main
+
+      - name: Publish summary
         shell: bash
         run: |
           echo "========================================"
-          echo "Git3D Premium Integration"
+          echo "Git3D Premium Profile Published"
           echo "========================================"
           echo ""
-          echo "Themes validated:"
-          echo "  ✓ Dark"
-          echo "  ✓ Light"
+          echo "README visualization:"
+          echo "  profile/git3d.svg"
           echo ""
-          echo "Visualization:"
-          echo "  ✓ Contribution Observatory"
-          echo "  ✓ Perspective Grid"
-          echo "  ✓ Contribution Terrain"
-          echo "  ✓ Repository Nodes"
-          echo "  ✓ Profile Core"
-          echo "  ✓ Profile Badge"
-          echo "  ✓ Profile Statistics"
-          echo "  ✓ Activity Telemetry"
+          echo "Alternate light visualization:"
+          echo "  profile/git3d-light.svg"
           echo ""
-          echo "Security/quality checks:"
-          echo "  ✓ No test fixture leakage"
-          echo "  ✓ No legacy V11 presentation"
-          echo "  ✓ SVG structure validated"
-          echo "  ✓ SVG size validated"
-          echo ""
-          echo "Generated artifacts:"
-          echo "  ✓ git3d-dark-visualization"
-          echo "  ✓ git3d-light-visualization"
-          echo ""
-          echo "Git3D V13 premium theme validation completed."
+          echo "Commit/push completed."
