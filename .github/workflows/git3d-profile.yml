@@ -1,4 +1,4 @@
-name: Git3D Profile
+name: Git3D Profile V12
 
 on:
   workflow_dispatch:
@@ -22,14 +22,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Git3D V11 visualization
-        uses: SandeepKomal/git3d-profile@d4f85e48e6b8b4e16160531a2c5bda09c6fe17fc
+      - name: Generate Git3D V12 contribution observatory
+        uses: SandeepKomal/git3d-profile@f308ca0d72003b726b0f0a3d1cbf519b500ef4f1
         with:
+          username: DevopsNimbus
           theme: orbit
           output: profile/git3d.svg
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify generated visualization
+      - name: Validate Git3D V12 visualization
         shell: bash
         run: |
           set -euo pipefail
@@ -37,35 +38,37 @@ jobs:
           SVG="profile/git3d.svg"
 
           echo "========================================"
-          echo "Validating Git3D V11 visualization"
+          echo "Validating Git3D V12"
           echo "========================================"
 
-          # Basic SVG validation
           test -s "$SVG"
           grep -q "<svg" "$SVG"
           grep -q "</svg>" "$SVG"
 
-          # Profile identity
+          # Identity
           grep -q "DevopsNimbus" "$SVG"
-
-          # Git3D identity
           grep -q "Git3D" "$SVG"
-          grep -q "Contribution Universe" "$SVG"
 
-          # V11 orbital universe
-          grep -q 'data-role="orbital-system"' "$SVG"
+          # V12 identity
+          grep -q "Contribution Observatory" "$SVG"
+          grep -q "CONTRIBUTION" "$SVG"
+          grep -q "OBSERVATORY" "$SVG"
+
+          # V12 renderer structure
+          grep -q 'data-role="observatory-stage"' "$SVG"
           grep -q 'data-role="repository-nodes"' "$SVG"
+          grep -q 'data-role="repository-node"' "$SVG"
           grep -q 'data-role="profile-core"' "$SVG"
           grep -q 'data-role="profile-badge"' "$SVG"
-          grep -q 'data-role="depth-guides"' "$SVG"
-          grep -q 'data-role="universe-insights"' "$SVG"
+          grep -q 'data-role="perspective-grid"' "$SVG"
+          grep -q 'data-role="contribution-terrain"' "$SVG"
           grep -q 'data-role="profile-stats"' "$SVG"
+          grep -q 'data-role="stat-card"' "$SVG"
 
-          # Activity insights
+          # Activity telemetry
           grep -q "TOP REPOSITORY" "$SVG"
           grep -q "TOP LANGUAGE" "$SVG"
-          grep -q "PEAK DAILY ACTIVITY" "$SVG"
-          grep -q "LONGEST STREAK" "$SVG"
+          grep -q "PEAK / STREAK" "$SVG"
 
           # Profile statistics
           grep -q "CONTRIBUTIONS" "$SVG"
@@ -75,41 +78,40 @@ jobs:
           grep -q "COLLABORATION" "$SVG"
           grep -q "ACTIVITY SCORE" "$SVG"
 
-          # Prevent test/fixture data
+          # Prevent fixture leakage
           if grep -q "testusername" "$SVG"; then
-            echo "ERROR: testusername detected in generated SVG."
+            echo "ERROR: test fixture username detected."
             exit 1
           fi
 
           if grep -q "octo<test" "$SVG"; then
-            echo "ERROR: test fixture data detected in generated SVG."
+            echo "ERROR: test fixture data detected."
             exit 1
           fi
 
-          # File sanity check
           size=$(wc -c < "$SVG")
 
           if [ "$size" -lt 1000 ]; then
-            echo "ERROR: Generated SVG is unexpectedly small: ${size} bytes"
+            echo "ERROR: SVG unexpectedly small: ${size} bytes"
             exit 1
           fi
 
           echo ""
-          echo "Git3D V11 SVG validation passed."
+          echo "Git3D V12 validation passed."
           echo "Generated SVG size: ${size} bytes"
 
       - name: Show generated visualization summary
         shell: bash
         run: |
           echo "========================================"
-          echo "Git3D V11 Generated"
+          echo "Git3D V12 Contribution Observatory"
           echo "========================================"
 
           wc -c profile/git3d.svg
 
           echo ""
           echo "SVG markers:"
-          grep -o 'data-role="[^\"]*"' profile/git3d.svg | sort -u || true
+          grep -o 'data-role="[^"]*"' profile/git3d.svg | sort -u || true
 
       - name: Commit updated visualization
         shell: bash
@@ -126,5 +128,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: update Git3D profile visualization"
+          git commit -m "chore: update Git3D V12 profile visualization"
           git push
