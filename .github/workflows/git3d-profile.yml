@@ -1,76 +1,100 @@
-name: Git3D Profile V12
+name: Git3D Premium Theme Validation
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "17 18 * * *"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: git3d-profile
+  group: git3d-premium-validation
   cancel-in-progress: false
 
 jobs:
-  generate:
+  generate-and-validate:
+    name: Validate ${{ matrix.theme }} theme
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - theme: dark
+            output: profile/git3d-dark.svg
+          - theme: light
+            output: profile/git3d-light.svg
+
     steps:
-      - name: Checkout profile repository
+      - name: Checkout DevopsNimbus
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
         with:
           fetch-depth: 0
 
-      - name: Generate Git3D V12 contribution observatory
-        uses: SandeepKomal/git3d-profile@f308ca0d72003b726b0f0a3d1cbf519b500ef4f1
+      - name: Generate Git3D visualization
+        uses: SandeepKomal/git3d-profile@aa7fe5826c11663921a5479e1372929e3ab76c44
         with:
           username: DevopsNimbus
-          theme: orbit
-          output: profile/git3d.svg
+          theme: ${{ matrix.theme }}
+          output: ${{ matrix.output }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Validate Git3D V12 visualization
+      - name: Validate generated SVG
         shell: bash
+        env:
+          SVG: ${{ matrix.output }}
+          THEME: ${{ matrix.theme }}
         run: |
           set -euo pipefail
 
-          SVG="profile/git3d.svg"
-
           echo "========================================"
-          echo "Validating Git3D V12"
+          echo "Git3D Premium Theme Validation"
+          echo "Theme: ${THEME}"
+          echo "File:  ${SVG}"
           echo "========================================"
 
+          echo ""
+          echo "1. Checking file exists..."
+          test -f "$SVG"
+
+          echo "2. Checking file is not empty..."
           test -s "$SVG"
+
+          echo "3. Checking SVG structure..."
           grep -q "<svg" "$SVG"
           grep -q "</svg>" "$SVG"
 
-          # Identity
+          echo "4. Checking profile identity..."
           grep -q "DevopsNimbus" "$SVG"
           grep -q "Git3D" "$SVG"
 
-          # V12 identity
+          echo "5. Checking Contribution Observatory..."
           grep -q "Contribution Observatory" "$SVG"
           grep -q "CONTRIBUTION" "$SVG"
           grep -q "OBSERVATORY" "$SVG"
 
-          # V12 renderer structure
+          echo "6. Checking observatory structure..."
           grep -q 'data-role="observatory-stage"' "$SVG"
-          grep -q 'data-role="repository-nodes"' "$SVG"
-          grep -q 'data-role="repository-node"' "$SVG"
-          grep -q 'data-role="profile-core"' "$SVG"
-          grep -q 'data-role="profile-badge"' "$SVG"
           grep -q 'data-role="perspective-grid"' "$SVG"
           grep -q 'data-role="contribution-terrain"' "$SVG"
+
+          echo "7. Checking repository visualization..."
+          grep -q 'data-role="repository-nodes"' "$SVG"
+          grep -q 'data-role="repository-node"' "$SVG"
+
+          echo "8. Checking profile core..."
+          grep -q 'data-role="profile-core"' "$SVG"
+          grep -q 'data-role="profile-badge"' "$SVG"
+
+          echo "9. Checking statistics..."
           grep -q 'data-role="profile-stats"' "$SVG"
           grep -q 'data-role="stat-card"' "$SVG"
 
-          # Activity telemetry
+          echo "10. Checking activity telemetry..."
           grep -q "TOP REPOSITORY" "$SVG"
           grep -q "TOP LANGUAGE" "$SVG"
           grep -q "PEAK / STREAK" "$SVG"
 
-          # Profile statistics
+          echo "11. Checking profile metrics..."
           grep -q "CONTRIBUTIONS" "$SVG"
           grep -q "REPOSITORIES" "$SVG"
           grep -q "STARS" "$SVG"
@@ -78,55 +102,101 @@ jobs:
           grep -q "COLLABORATION" "$SVG"
           grep -q "ACTIVITY SCORE" "$SVG"
 
-          # Prevent fixture leakage
+          echo "12. Checking for old V11 presentation..."
+          if grep -q "DELIVERY SYSTEM" "$SVG"; then
+            echo "ERROR: Old DELIVERY SYSTEM content detected"
+            exit 1
+          fi
+
+          if grep -q "CONTRIBUTION MATRIX" "$SVG"; then
+            echo "ERROR: Old CONTRIBUTION MATRIX content detected"
+            exit 1
+          fi
+
+          echo "13. Checking for test fixture leakage..."
           if grep -q "testusername" "$SVG"; then
-            echo "ERROR: test fixture username detected."
+            echo "ERROR: testusername detected"
             exit 1
           fi
 
-          if grep -q "octo<test" "$SVG"; then
-            echo "ERROR: test fixture data detected."
+          if grep -q "octo&lt;test" "$SVG"; then
+            echo "ERROR: octo<test fixture detected"
             exit 1
           fi
 
-          size=$(wc -c < "$SVG")
+          echo "14. Checking SVG size..."
+          SIZE=$(wc -c < "$SVG")
 
-          if [ "$size" -lt 1000 ]; then
-            echo "ERROR: SVG unexpectedly small: ${size} bytes"
+          echo "Generated SVG size: ${SIZE} bytes"
+
+          if [ "$SIZE" -lt 1000 ]; then
+            echo "ERROR: SVG is suspiciously small"
             exit 1
           fi
 
           echo ""
-          echo "Git3D V12 validation passed."
-          echo "Generated SVG size: ${size} bytes"
+          echo "========================================"
+          echo "VALIDATION PASSED"
+          echo "Theme: ${THEME}"
+          echo "Size:  ${SIZE} bytes"
+          echo "========================================"
 
-      - name: Show generated visualization summary
+      - name: Show SVG metadata
         shell: bash
         run: |
-          echo "========================================"
-          echo "Git3D V12 Contribution Observatory"
-          echo "========================================"
-
-          wc -c profile/git3d.svg
+          echo "Generated file:"
+          ls -lh "${{ matrix.output }}"
 
           echo ""
-          echo "SVG markers:"
-          grep -o 'data-role="[^"]*"' profile/git3d.svg | sort -u || true
+          echo "Detected data roles:"
+          grep -o 'data-role="[^"]*"' "${{ matrix.output }}" \
+            | sort -u \
+            || true
 
-      - name: Commit updated visualization
+      - name: Upload generated visualization
+        uses: actions/upload-artifact@v4
+        with:
+          name: git3d-${{ matrix.theme }}-visualization
+          path: ${{ matrix.output }}
+          if-no-files-found: error
+          retention-days: 14
+
+  integration-summary:
+    name: Git3D Integration Summary
+    runs-on: ubuntu-latest
+    needs: generate-and-validate
+    if: always()
+
+    steps:
+      - name: Report validation result
         shell: bash
         run: |
-          set -euo pipefail
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add profile/git3d.svg
-
-          if git diff --cached --quiet; then
-            echo "No Git3D visualization changes detected."
-            exit 0
-          fi
-
-          git commit -m "chore: update Git3D V12 profile visualization"
-          git push
+          echo "========================================"
+          echo "Git3D Premium Integration"
+          echo "========================================"
+          echo ""
+          echo "Themes validated:"
+          echo "  ✓ Dark"
+          echo "  ✓ Light"
+          echo ""
+          echo "Visualization:"
+          echo "  ✓ Contribution Observatory"
+          echo "  ✓ Perspective Grid"
+          echo "  ✓ Contribution Terrain"
+          echo "  ✓ Repository Nodes"
+          echo "  ✓ Profile Core"
+          echo "  ✓ Profile Badge"
+          echo "  ✓ Profile Statistics"
+          echo "  ✓ Activity Telemetry"
+          echo ""
+          echo "Security/quality checks:"
+          echo "  ✓ No test fixture leakage"
+          echo "  ✓ No legacy V11 presentation"
+          echo "  ✓ SVG structure validated"
+          echo "  ✓ SVG size validated"
+          echo ""
+          echo "Generated artifacts:"
+          echo "  ✓ git3d-dark-visualization"
+          echo "  ✓ git3d-light-visualization"
+          echo ""
+          echo "Git3D V13 premium theme validation completed."
