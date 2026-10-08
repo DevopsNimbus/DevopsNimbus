@@ -53,6 +53,7 @@
 <div align="center">
 
 <a href="https://github.com/DevopsNimbus"><img src="./cards/connect-github.svg" alt="GitHub" width="270"></a>
+<a href="mailto:devopsnimbus@gmail.com"><img src="./cards/connect-email.svg" alt="Email" width="270"></a>
 
 </div>
 
