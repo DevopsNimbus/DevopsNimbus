@@ -1,8 +1,8 @@
 {
   "style": "showcase",
-  "theme": "auto",
+  "theme": "cyber",
   "order": "",
-  "featured": "DevopsNimbus,KOMORA_V8",
+  "featured": "",
   "adaptive": true,
   "animate": true,
   "heatmap": true,
