@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./banner.svg" alt="DevopsNimbus, Cloud Security Engineer" width="100%">
+<img src="./banner.svg" alt="DevopsNimbus" width="100%">
 
 </div>
 
