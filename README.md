@@ -1,34 +1,65 @@
-# 👋 Hi, I'm DevopsNimbus
+<div align="center">
 
-☁️ **Cloud Security Engineer** focused on building secure, scalable, and automated cloud environments.
+<img src="./banner.svg" alt="DevopsNimbus, Cloud Security Engineer" width="100%">
 
-🔐 I work across **Cloud Security, DevSecOps, Kubernetes, Infrastructure Automation, and CI/CD**.
+</div>
 
-## 🛠️ Skills
+## GitHub stats
 
-- ☁️ **Cloud:** AWS
-- 🔐 **Cloud Security:** IAM, Security Hub, GuardDuty, KMS, Secrets Manager
-- ☸️ **Containers:** Docker, Kubernetes, Amazon EKS
-- 🏗️ **Infrastructure as Code:** Terraform, CloudFormation
-- 🚀 **CI/CD:** GitHub Actions, Jenkins, Harness
-- 🛡️ **DevSecOps:** SonarQube, Trivy, Checkov, OWASP ZAP, Kyverno, Falco
-- 📊 **Monitoring:** Prometheus, Grafana, Alertmanager, Splunk, CloudWatch
-- 🤖 **Automation:** Python, Bash, Ansible
-- 🐙 **Version Control:** Git, GitHub
+<div align="center">
 
-## 🎯 Focus Areas
+<img src="./cards/stats.svg" alt="GitHub stats for DevopsNimbus" width="412">
+<img src="./cards/streak.svg" alt="Contribution streak for DevopsNimbus" width="412">
+<img src="./cards/activity.svg" alt="Contribution heatmap for DevopsNimbus" width="100%">
+<img src="./cards/universe.svg" alt="Contribution universe for DevopsNimbus" width="100%">
 
-☁️ Cloud Security  
-🛡️ DevSecOps  
-☸️ Kubernetes Security  
-🏗️ Infrastructure Automation  
-🚀 CI/CD  
-📊 Observability  
+</div>
 
-## 💡 What I Do
+## Stack
 
-I build secure cloud infrastructure, automate delivery pipelines, strengthen Kubernetes environments, and integrate security throughout the software delivery lifecycle.
+<div align="center">
 
----
+<img src="./cards/languages.svg" alt="Languages and tools for DevopsNimbus" width="100%">
 
-### 🚀 Always learning. Always building. Always securing.
+</div>
+
+## Timeline
+
+<div align="center">
+
+<img src="./cards/timeline.svg" alt="Timeline of repositories created by DevopsNimbus" width="100%">
+
+</div>
+
+## Projects
+
+<div align="center">
+
+<a href="https://github.com/DevopsNimbus/DevopsNimbus"><img src="./cards/project-1.svg" alt="DevopsNimbus" width="412"></a>
+<a href="https://github.com/DevopsNimbus/KOMORA_V8"><img src="./cards/project-2.svg" alt="KOMORA_V8" width="412"></a>
+
+</div>
+
+## Recently pushed
+
+<div align="center">
+
+<img src="./cards/recent.svg" alt="Recently pushed repositories of DevopsNimbus" width="100%">
+
+</div>
+
+## Connect
+
+<div align="center">
+
+<a href="https://github.com/DevopsNimbus"><img src="./cards/connect-github.svg" alt="GitHub" width="270"></a>
+
+</div>
+
+<div align="center">
+
+<img src="./cards/footer.svg" alt="" width="100%">
+
+<sub>Patched together from public GitHub data · made with <a href="https://readme-glassfolio.in/">Patch your profile</a></sub>
+
+</div>
