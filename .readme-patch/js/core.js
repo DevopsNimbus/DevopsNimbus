@@ -280,6 +280,8 @@
    * A link like ?user=DevopsNimbus&theme=cyber reopens the tool with the same choices, so people can share their setup. */
   var SHARE_TEXT = ["role", "tagline", "stack", "linkedin"];
   var SHARE_ACCENTS = ["accent1", "accent2"];
+  // the 3D universe's colours: Git3D Universe's own cosmic palettes ("neon" is the option's original name, kept so saved choices and links still work), or the profile's own theme
+  var UNIVERSE_STYLES = ["neon", "theme"];
   var SHARE_FLAGS = ["adaptive", "animate", "heatmap", "credit", "banner", "cards", "bars", "pie", "timeline", "proj", "recent", "links", "universe", "wave"];
 
   /** Only values that differ from the defaults go into the link, so links stay short. */
@@ -288,6 +290,7 @@
     if (user) q.set("user", user);
     if (o.theme !== DEFAULTS.theme) q.set("theme", o.theme);
     if (o.style !== DEFAULTS.style) q.set("style", o.style);
+    if (o.universeStyle !== DEFAULTS.universeStyle && UNIVERSE_STYLES.indexOf(o.universeStyle) !== -1) q.set("universeStyle", o.universeStyle);
     SHARE_TEXT.forEach(function (k) { if (o[k]) q.set(k, String(o[k]).slice(0, 160)); });
     SHARE_ACCENTS.forEach(function (k) { if (validHex(o[k])) q.set(k, o[k].toLowerCase()); });
     if (sectionOrder(o).join(",") !== SECTIONS.join(",")) q.set("order", sectionOrder(o).join(","));
@@ -304,6 +307,8 @@
     if (theme && THEME_ORDER.indexOf(theme) !== -1) opts.theme = theme;
     var style = q.get("style");
     if (style === "showcase" || style === "changelog") opts.style = style;
+    var ustyle = q.get("universeStyle");
+    if (UNIVERSE_STYLES.indexOf(ustyle) !== -1) opts.universeStyle = ustyle;
     SHARE_TEXT.forEach(function (k) { var v = q.get(k); if (v) opts[k] = oneLine(v).slice(0, 160); });
     SHARE_ACCENTS.forEach(function (k) { var v = q.get(k); if (validHex(v)) opts[k] = v.toLowerCase(); });
     var ord = q.get("order");
@@ -344,7 +349,7 @@
 
   var DEFAULTS = {
     style: "showcase", theme: "auto", accent1: "", accent2: "", order: "", featured: "", adaptive: true, mode: "", suffix: "", animate: true, heatmap: true, credit: true, siteUrl: "", tagline: "", role: "", stack: "", linkedin: "",
-    banner: true, cards: true, bars: true, pie: false, timeline: true, proj: true, recent: false, links: true, universe: true, wave: true
+    banner: true, cards: true, bars: true, pie: false, timeline: true, proj: true, recent: false, links: true, universe: true, universeStyle: "neon", wave: true
   };
   function withDefaults(o) {
     var out = {}, k;
@@ -804,7 +809,7 @@
       { name: "dotfiles", html_url: "https://github.com/DevopsNimbus/dotfiles", description: "", language: "Shell", stargazers_count: 3, pushed_at: "2026-05-01T00:00:00Z", created_at: "2021-01-05T00:00:00Z", topics: [] },
       { name: "slo-calc", html_url: "https://github.com/DevopsNimbus/slo-calc", description: "Error-budget calculator", language: "Go", stargazers_count: 7, pushed_at: "2026-03-10T00:00:00Z", created_at: "2022-08-19T00:00:00Z", topics: ["sre"] }
     ],
-    makeActivity(sampleDays, { source: "public", commits: 1243, prs: 87, issues: 21 }));
+    makeActivity(sampleDays, { source: "public", commits: 1243, prs: 87, issues: 21, reviews: 58 }));
 
   return {
     parseUser: parseUser, buildModel: buildModel, buildReadme: buildReadme,

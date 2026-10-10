@@ -1,9 +1,9 @@
 {
   "style": "showcase",
-  "theme": "cyber",
+  "theme": "auto",
   "order": "",
   "featured": "DevopsNimbus,KOMORA_V8",
-  "adaptive": false,
+  "adaptive": true,
   "animate": true,
   "heatmap": true,
   "credit": true,
@@ -21,5 +21,6 @@
   "recent": true,
   "links": true,
   "universe": true,
+  "universeStyle": "neon",
   "wave": true
 }
