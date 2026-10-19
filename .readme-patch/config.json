@@ -1,6 +1,6 @@
 {
   "style": "showcase",
-  "theme": "auto",
+  "theme": "paper",
   "order": "",
   "featured": "",
   "adaptive": true,
@@ -23,8 +23,8 @@
   "universe": true,
   "universeStyle": "neon",
   "wave": true,
-  "showpiece": "holo",
-  "world": "voxel",
+  "showpiece": "",
+  "world": "atlas",
   "openTo": "",
   "resume": "",
   "certs": "",

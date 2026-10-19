@@ -6,7 +6,7 @@
 
 <div align="center">
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/showpiece.svg"><img src="./cards/showpiece-light.svg" alt="Holo trading card for DevopsNimbus" width="100%"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/showpiece.svg"><img src="./cards/showpiece-light.svg" alt="Passport for DevopsNimbus" width="100%"></picture>
 
 </div>
 
@@ -83,7 +83,6 @@
 <div align="center">
 
 <a href="https://github.com/DevopsNimbus"><picture><source media="(prefers-color-scheme: dark)" srcset="./cards/connect-github.svg"><img src="./cards/connect-github-light.svg" alt="GitHub" width="270"></picture></a>
-<a href="mailto:devopsnimbus@gmail.com"><picture><source media="(prefers-color-scheme: dark)" srcset="./cards/connect-email.svg"><img src="./cards/connect-email-light.svg" alt="Email" width="270"></picture></a>
 
 </div>
 
