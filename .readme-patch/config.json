@@ -2,7 +2,7 @@
   "style": "showcase",
   "theme": "auto",
   "order": "",
-  "featured": "DevopsNimbus,KOMORA_V8",
+  "featured": "",
   "adaptive": true,
   "animate": true,
   "heatmap": true,
@@ -22,5 +22,13 @@
   "links": true,
   "universe": true,
   "universeStyle": "neon",
-  "wave": true
+  "wave": true,
+  "showpiece": "weather",
+  "world": "abyss",
+  "openTo": "",
+  "resume": "",
+  "certs": "",
+  "impact": "",
+  "summary": false,
+  "proof": false
 }

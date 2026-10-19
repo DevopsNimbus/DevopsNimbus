@@ -89,6 +89,16 @@
     };
   }
 
+  /* GitHub's own language colours, shared by the cards and the showpieces. */
+  var LANG_COLORS = {
+    "JavaScript": "#f1e05a", "TypeScript": "#3178c6", "Python": "#3572A5", "Go": "#00ADD8", "Rust": "#dea584",
+    "Java": "#b07219", "Kotlin": "#A97BFF", "Swift": "#F05138", "C": "#9a9a9a", "C++": "#f34b7d", "C#": "#178600",
+    "PHP": "#4F5D95", "Ruby": "#CC342D", "Shell": "#89e051", "HCL": "#844FBA", "Dockerfile": "#5d8fa8",
+    "HTML": "#e34c26", "CSS": "#8a63d2", "SCSS": "#c6538c", "Vue": "#41b883", "Jupyter Notebook": "#DA5B0B",
+    "Makefile": "#6aa84f", "Lua": "#6c7bff", "Dart": "#00B4AB", "Markdown": "#8fa3b8", "Jinja": "#c25a5a",
+    "Groovy": "#4298b8", "Scala": "#DC322F", "R": "#198CE7"
+  };
+
   /* Curated neon pairs for the "auto" theme: chosen from the username, so every profile looks distinct. */
   var NEON = [
     ["#38e8ff", "#8b5cf6"],   // cyan / violet
@@ -278,11 +288,11 @@
 
   /* ---------- shareable links ----------
    * A link like ?user=DevopsNimbus&theme=cyber reopens the tool with the same choices, so people can share their setup. */
-  var SHARE_TEXT = ["role", "tagline", "stack", "linkedin"];
+  var SHARE_TEXT = ["role", "tagline", "stack", "linkedin", "openTo", "certs"];
   var SHARE_ACCENTS = ["accent1", "accent2"];
   // the 3D universe's colours: Git3D Universe's own cosmic palettes ("neon" is the option's original name, kept so saved choices and links still work), or the profile's own theme
   var UNIVERSE_STYLES = ["neon", "theme"];
-  var SHARE_FLAGS = ["adaptive", "animate", "heatmap", "credit", "banner", "cards", "bars", "pie", "timeline", "proj", "recent", "links", "universe", "wave"];
+  var SHARE_FLAGS = ["adaptive", "animate", "heatmap", "credit", "banner", "cards", "bars", "pie", "timeline", "proj", "recent", "links", "universe", "wave", "summary", "proof"];
 
   /** Only values that differ from the defaults go into the link, so links stay short. */
   function toQuery(user, options) {
@@ -290,11 +300,15 @@
     if (user) q.set("user", user);
     if (o.theme !== DEFAULTS.theme) q.set("theme", o.theme);
     if (o.style !== DEFAULTS.style) q.set("style", o.style);
+    if (SHOWPIECE_KEYS.indexOf(o.showpiece) !== -1 || o.showpiece === "none") q.set("showpiece", o.showpiece);
+    if (worldOf(o)) q.set("world", o.world);
     if (o.universeStyle !== DEFAULTS.universeStyle && UNIVERSE_STYLES.indexOf(o.universeStyle) !== -1) q.set("universeStyle", o.universeStyle);
     SHARE_TEXT.forEach(function (k) { if (o[k]) q.set(k, String(o[k]).slice(0, 160)); });
     SHARE_ACCENTS.forEach(function (k) { if (validHex(o[k])) q.set(k, o[k].toLowerCase()); });
     if (sectionOrder(o).join(",") !== SECTIONS.join(",")) q.set("order", sectionOrder(o).join(","));
     if (o.featured) q.set("featured", String(o.featured).slice(0, 400));
+    if (resumeUrl(o)) q.set("resume", resumeUrl(o));
+    if (o.impact) q.set("impact", String(o.impact).slice(0, 600));
     SHARE_FLAGS.forEach(function (k) { if (o[k] !== DEFAULTS[k]) q.set(k, o[k] ? "1" : "0"); });
     return q.toString();
   }
@@ -307,6 +321,10 @@
     if (theme && THEME_ORDER.indexOf(theme) !== -1) opts.theme = theme;
     var style = q.get("style");
     if (style === "showcase" || style === "changelog") opts.style = style;
+    var show = q.get("showpiece");
+    if (SHOWPIECE_KEYS.indexOf(show) !== -1 || show === "none") opts.showpiece = show;
+    var wd = q.get("world");
+    if (WORLD_KEYS.indexOf(wd) !== -1) opts.world = wd;
     var ustyle = q.get("universeStyle");
     if (UNIVERSE_STYLES.indexOf(ustyle) !== -1) opts.universeStyle = ustyle;
     SHARE_TEXT.forEach(function (k) { var v = q.get(k); if (v) opts[k] = oneLine(v).slice(0, 160); });
@@ -315,6 +333,10 @@
     if (ord) { var clean = sectionOrder({ order: ord }); if (clean.join(",") !== SECTIONS.join(",")) opts.order = clean.join(","); }
     var feat = q.get("featured");
     if (feat) opts.featured = oneLine(feat).slice(0, 400);
+    var res = q.get("resume");
+    if (res && resumeUrl({ resume: res })) opts.resume = resumeUrl({ resume: res });
+    var imp = q.get("impact");
+    if (imp) opts.impact = oneLine(imp).slice(0, 600);
     SHARE_FLAGS.forEach(function (k) { var v = q.get(k); if (v === "0" || v === "1") opts[k] = v === "1"; });
     return { user: user, opts: opts };
   }
@@ -349,7 +371,8 @@
 
   var DEFAULTS = {
     style: "showcase", theme: "auto", accent1: "", accent2: "", order: "", featured: "", adaptive: true, mode: "", suffix: "", animate: true, heatmap: true, credit: true, siteUrl: "", tagline: "", role: "", stack: "", linkedin: "",
-    banner: true, cards: true, bars: true, pie: false, timeline: true, proj: true, recent: false, links: true, universe: true, universeStyle: "neon", wave: true
+    banner: true, cards: true, bars: true, pie: false, timeline: true, proj: true, recent: false, links: true, universe: true, universeStyle: "neon", wave: true,
+    showpiece: "", world: "", openTo: "", resume: "", certs: "", impact: "", summary: false, proof: false
   };
   function withDefaults(o) {
     var out = {}, k;
@@ -417,8 +440,8 @@
 
   function stack(m, o) {
     var useCard = o.cards && (m.langs.length || toolList(m, o).length);
-    if (!useCard && !m.langs.length) return [];
-    var out = ["## Stack", ""];
+    if (!useCard && !m.langs.length && !wantsProof(m, o)) return [];
+    var out = [head(o, "stack", "Stack"), ""];
     if (useCard) {
       out.push('<div align="center">', "", pic(o, "cards/languages.svg", 'alt="Languages and tools for ' + esc(m.login) + '" width="100%"'), "", "</div>", "");
     } else if (o.bars) {
@@ -435,6 +458,11 @@
       out.push("```", "");
     }
     if (!useCard && !o.bars && !o.pie) out.push(m.langs.map(function (l) { return "`" + l.name + "`"; }).join(" "), "");
+    if (wantsProof(m, o)) out.push('<div align="center">', "", pic(o, "cards/skills.svg", 'alt="Skills with proof for ' + esc(m.login) + '" width="100%"'), "", "</div>", "");
+    else if (o.proof && !o.cards) skillProof(m, o).forEach(function (x, i, all) {
+      out.push("- **" + x.skill.replace(/[*_`]/g, "") + "**: " + x.repos + (x.repos === 1 ? " repo" : " repos") + (x.stars ? ", " + x.stars + " stars" : "") + (x.latest ? ", latest " + x.latest : ""));
+      if (i === all.length - 1) out.push("");
+    });
     return out;
   }
 
@@ -442,14 +470,14 @@
     var shown = pickProjects(m, o);
     if (!shown.length) return [];
     if (!shown.some(function (r) { return r.desc; })) {
-      var plain = ["## Projects", ""];
+      var plain = [head(o, "projects", "Projects"), ""];
       shown.forEach(function (r) {
         plain.push("- [" + r.name + "](" + r.url + ")" + (r.lang ? " · " + r.lang : "") + (r.stars ? " · ★ " + r.stars : ""));
       });
       plain.push("");
       return plain;
     }
-    var out = ["## Projects", "", "| Repo | What it does | Lang | Stars |", "| --- | --- | --- | ---: |"];
+    var out = [head(o, "projects", "Projects"), "", "| Repo | What it does | Lang | Stars |", "| --- | --- | --- | ---: |"];
     shown.forEach(function (r) {
       out.push("| [" + cell(r.name) + "](" + r.url + ") | " + cell(r.desc || "-") + " | " + cell(r.lang || "-") + " | " + r.stars + " |");
     });
@@ -491,6 +519,158 @@
   function wantsUniverse(m, o) { return !!(o.cards && o.universe && m.activity && m.activity.daily && m.activity.daily.length); }
   function wantsRecent(m, o) { return !!(o.cards && o.recent && m.recent && m.recent.length); }
 
+  /* ---------- worlds ----------
+   * A world is a complete design for the whole README (worlds.js draws it): banner, every card, an animated divider
+   * that opens each section, and a footer. It brings its own showpiece unless the person picks another (or "none"). */
+  var WORLDS = [
+    { key: "airport", label: "Airport", showpiece: "departures", blurb: "Split-flap departure boards from top to bottom: amber on black, flap tiles that fold, a plane crossing between sections." },
+    { key: "transit", label: "Transit", showpiece: "metro", blurb: "Metro signage: roundels, line stripes in your language colours, and a train pulling through every section." },
+    { key: "broadsheet", label: "Broadsheet", showpiece: "newspaper", blurb: "A newspaper: your name as the masthead, serif type, double rules, halftone heatmap, an ink roller on every rule." },
+    { key: "observatory", label: "Observatory", showpiece: "constellation", blurb: "A star chart: deep sky, a celestial grid, contributions as twinkling stars and a comet between sections." },
+    { key: "botanical", label: "Botanical", showpiece: "garden", blurb: "A herbarium: pressed-specimen sheets with tape and sprigs, leaves for contributions, vines that sway." },
+    { key: "atlas", label: "Atlas", showpiece: "passport", blurb: "An antique sea chart: parchment, contour lines, a compass rose that turns, and a ship sailing between sections." },
+    { key: "museum", label: "Museum", showpiece: "holo", blurb: "A gallery: your name in a gilded frame, brass-trimmed placards, a drifting spotlight and velvet ropes." },
+    { key: "ink", label: "Ink", showpiece: "garden", blurb: "Sumi-e on washi paper: brush strokes, an ensō for each streak, your vermilion seal and falling sakura petals." },
+    { key: "periodic", label: "Periodic", showpiece: "vitals", blurb: "A lab notebook: graph paper, an element tile for every section, electron shells and molecules that vibrate." },
+    { key: "abyss", label: "Abyss", showpiece: "weather", blurb: "The deep sea: light rays and rising bubbles, bioluminescent plankton, sonar rings, jellyfish and swaying kelp." }
+  ];
+  var WORLD_KEYS = WORLDS.map(function (w) { return w.key; });
+  function worldOf(o) { return WORLD_KEYS.indexOf(o && o.world) !== -1 ? WORLDS[WORLD_KEYS.indexOf(o.world)] : null; }
+  /** A section heading: the plain Markdown one, or in a world (with cards) the world's animated divider, titled in its alt text. */
+  function head(o, key, title) {
+    if (!(o.cards && worldOf(o))) return "## " + title;
+    return '<div align="center">\n\n' + pic(o, "cards/divider-" + key + ".svg", 'alt="' + esc(title) + '" width="100%"') + "\n\n</div>";
+  }
+  /** The showpiece to draw: the person's pick, else the world's own; "none" switches it off. */
+  function showpieceKey(o) {
+    if (o.showpiece === "none") return "";
+    if (SHOWPIECE_KEYS.indexOf(o.showpiece) !== -1) return o.showpiece;
+    var w = worldOf(o);
+    return w ? w.showpiece : "";
+  }
+
+  /* ---------- for employers ----------
+   * What a recruiter looks for in the first ten seconds: what you're open to, proof of impact, credentials, and a
+   * way to reach your CV. Every field is empty by default, so a README only changes once someone fills one in. */
+
+  /** A résumé link, only when it is a plain http(s) address (it ends up in an href). */
+  function resumeUrl(o) {
+    var u = oneLine(o && o.resume);
+    return /^https?:\/\/[^\s"'<>`]+$/i.test(u) && u.length <= 300 ? u : "";
+  }
+  function certList(o) { return unique(list(o && o.certs)).map(function (c) { return c.slice(0, 40); }).slice(0, 8); }
+
+  /**
+   * Impact numbers per project, written like "drift-radar: 40+ accounts watched, 99.9% uptime; tf-modules: 40 modules".
+   * Repo names can't contain ":" or ";", so those separate the entries. Each metric splits into its number and label.
+   */
+  function parseImpact(text) {
+    var out = {};
+    String(text || "").split(";").forEach(function (entry) {
+      var at = entry.indexOf(":");
+      if (at < 1) return;
+      var repo = oneLine(entry.slice(0, at)).toLowerCase(), metrics = [];
+      entry.slice(at + 1).split(",").forEach(function (raw) {
+        var t = plain(raw).slice(0, 48);
+        if (!t) return;
+        var mm = /^([~<>≈]?\$?[\d][\d.,]*\s?(?:[%+×x]|[kKmMbB](?![a-z])|ms\b|s\b|h\b)*\+?)\s*(.*)$/.exec(t);
+        metrics.push(mm ? { value: mm[1].replace(/\s+$/, ""), label: mm[2] } : { value: t, label: "" });
+      });
+      if (repo && metrics.length) out[repo] = metrics.slice(0, 3);
+    });
+    return out;
+  }
+  function impactFor(o, repo) { return (parseImpact(o && o.impact)[String(repo && repo.name || repo).toLowerCase()]) || []; }
+  /** Projects shown in the README with impact numbers attached. */
+  function anyImpact(m, o) { return pickProjects(m, o).some(function (r) { return impactFor(o, r).length; }); }
+
+  /** Up to three plain lines a recruiter can read in five seconds, drawn from the profile and the person's own numbers. */
+  function recruiterSummary(m, o) {
+    var lines = [], langs = m.langs.slice(0, 2).map(function (l) { return l.name; });
+    var stack = list(o.stack).slice(0, 2), focus = stack.length ? stack : langs;
+    if (focus.length) {
+      var n = m.all.filter(function (r) { return focus.some(function (f) { return matchesSkill(r, f); }); });
+      var st = n.reduce(function (t, r) { return t + r.stars; }, 0);
+      lines.push("Strongest in " + focus.join(" and ") + ": " + n.length + (n.length === 1 ? " public repo" : " public repos") + (st ? ", " + st + " stars" : "") + ".");
+    }
+    var best = pickProjects(m, o).filter(function (r) { return impactFor(o, r).length; })[0];
+    if (best) {
+      var im = impactFor(o, best)[0];
+      lines.push("Best result: " + (im.value + (im.label ? " " + im.label : "")) + " with " + best.name + ".");
+    } else if (m.top.length && m.top[0].stars) {
+      lines.push("Most starred: " + m.top[0].name + " (" + m.top[0].stars + " stars)" + (m.top[0].desc ? ", " + m.top[0].desc.charAt(0).toLowerCase() + m.top[0].desc.slice(1).replace(/\.$/, "") : "") + ".");
+    }
+    var a = m.activity;
+    if (a && (a.total || a.active)) {
+      var span = a.source === "graphql" ? "in the past year" : "in the last " + a.windowDays + " days";
+      lines.push((a.total ? a.total + " contributions " : a.active + " active days ") + span + (a.longest ? ", with a " + a.longest + "-day streak" : "") + ".");
+    }
+    return lines.slice(0, 3).map(function (l) { return l.length > 110 ? l.slice(0, 109) + "\u2026" : l; });
+  }
+
+  /** Does a repo show this skill? Its language, a topic, or its name or description naming it. */
+  function matchesSkill(r, skill) {
+    var s = String(skill).toLowerCase().trim(), slug = s.replace(/\s+/g, "-");
+    if (!s) return false;
+    if (String(r.lang).toLowerCase() === s) return true;
+    if ((r.topics || []).some(function (t) { return t.toLowerCase() === slug || t.toLowerCase() === s; })) return true;
+    var re = new RegExp("(^|[^a-z0-9])" + s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "($|[^a-z0-9])", "i");
+    return re.test(r.name.replace(/[-_]/g, " ")) || re.test(r.desc || "");
+  }
+  /** Each skill with the evidence for it: how many repos, their stars, and the latest one. Skills with no evidence are left out. */
+  function skillProof(m, o) {
+    var skills = unique(list(o.stack).concat(m.langs.map(function (l) { return l.name; }))).slice(0, 8);
+    return skills.map(function (sk) {
+      var repos = m.all.filter(function (r) { return matchesSkill(r, sk); });
+      var latest = repos.slice().sort(function (a, b) { return a.pushed < b.pushed ? 1 : -1; })[0];
+      return { skill: sk, repos: repos.length, stars: repos.reduce(function (t, r) { return t + r.stars; }, 0), latest: latest ? latest.name : "" };
+    }).filter(function (x) { return x.repos; }).slice(0, 6);
+  }
+  function wantsHire(m, o) { return !!(oneLine(o.openTo) || resumeUrl(o) || certList(o).length || o.summary); }
+  function wantsProof(m, o) { return !!(o.cards && o.proof && skillProof(m, o).length); }
+
+  /** The "for employers" block, right under the banner: a card in card mode, a few plain lines otherwise. */
+  function hireSection(m, o) {
+    if (!wantsHire(m, o)) return [];
+    var res = resumeUrl(o), out = ['<div align="center">', ""];
+    if (o.cards) {
+      var img = pic(o, "cards/hire.svg", 'alt="' + esc(oneLine(o.openTo) ? "Open to: " + oneLine(o.openTo) : "About " + m.login) + '" width="100%"');
+      out.push(res ? '<a href="' + esc(res) + '">' + img + "</a>" : img, "");
+      if (res) out.push('<a href="' + esc(res) + '"><b>View my résumé</b></a>', "");
+    } else {
+      if (oneLine(o.openTo)) out.push("**Open to:** " + plain(o.openTo).replace(/[*_]/g, ""), "");
+      if (certList(o).length) out.push("**Certified:** " + certList(o).map(function (c) { return c.replace(/[*_|]/g, ""); }).join(" · "), "");
+      if (o.summary) recruiterSummary(m, o).forEach(function (l) { out.push(l.replace(/[*_]/g, ""), ""); });
+      if (res) out.push('<a href="' + esc(res) + '"><b>View my résumé</b></a>', "");
+    }
+    out.push("</div>", "");
+    return out;
+  }
+
+  /* ---------- showpieces ----------
+   * One full-width animated scene under the banner, drawn from the profile's own data (showpieces.js draws them).
+   * Off ("") by default, so existing READMEs keep their look until someone picks one. */
+  var SHOWPIECES = [
+    { key: "departures", label: "Departures board", blurb: "Repos as flights on a split-flap board, with a ticker that says you're open to roles." },
+    { key: "holo", label: "Holo trading card", blurb: "You as a collectible card: contributions are HP, top projects are attacks, a foil shimmer on top." },
+    { key: "metro", label: "Metro map", blurb: "Languages are metro lines, repos are stations by year, all running into your own interchange." },
+    { key: "vinyl", label: "Now playing", blurb: "Your work as an album: projects are the tracklist, months are a bouncing equaliser." },
+    { key: "vitals", label: "Vital signs", blurb: "A bedside monitor: commits as the heartbeat, streak as heart rate, PRs and reviews as vitals." },
+    { key: "garden", label: "Code garden", blurb: "Repos grow as flowers by stars, the grass is your contribution graph. Night or day, with the visitor's theme." },
+    { key: "yearcode", label: "Year in Code", blurb: "Your year in review: six bold tiles with your total, top language, busiest month, streak, best day and coding personality." },
+    { key: "newspaper", label: "The Daily Commit", blurb: "A front page: your year is the headline, your top repo the lead story, with markets, weather and classifieds." },
+    { key: "passport", label: "Passport", blurb: "An open passport with your details and a visa stamp for every language you've shipped in." },
+    { key: "constellation", label: "Constellation sky", blurb: "Each language is a constellation, each repo a star that shines brighter with more stars." },
+    { key: "weather", label: "Commit forecast", blurb: "Your chance of commits, the last seven days as weather, and a radar sweep over recent weeks." }
+  ];
+  var SHOWPIECE_KEYS = SHOWPIECES.map(function (s) { return s.key; });
+  function wantsShowpiece(m, o) { return !!(o.cards && showpieceKey(o)); }
+  function showpieceSection(m, o) {
+    if (!wantsShowpiece(m, o)) return [];
+    var label = SHOWPIECES[SHOWPIECE_KEYS.indexOf(showpieceKey(o))].label;
+    return ['<div align="center">', "", pic(o, "cards/showpiece.svg", 'alt="' + esc(label + " for " + m.login) + '" width="100%"'), "", "</div>", ""];
+  }
+
   var MAX_PROJECT_CARDS = 6;
   var SECTIONS = ["stats", "stack", "timeline", "projects", "connect"];
 
@@ -529,7 +709,7 @@
 
   function statsSection(m, o) {
     var two = !!m.activity;
-    var out = ["## GitHub stats", "", '<div align="center">', ""];
+    var out = [head(o, "stats", "GitHub stats"), "", '<div align="center">', ""];
     var heat = o.heatmap && m.activity && m.activity.daily && m.activity.daily.length;
     // one paragraph for the whole grid: side by side and stacked cards get the same small gutter, and the
     // half-width pair lines up with the full-width heatmap's edges instead of sitting indented inside it
@@ -545,7 +725,7 @@
   function projectCards(m, o) {
     var top = pickProjects(m, o);
     if (!top.length) return [];
-    var out = ["## Projects", "", '<div align="center">', ""];
+    var out = [head(o, "projects", "Projects"), "", '<div align="center">', ""];
     top.forEach(function (r, i) {
       out.push('<a href="' + esc(r.url) + '">' + pic(o, "cards/project-" + (i + 1) + ".svg", 'alt="' + esc(r.name) + '" width="' + HALF + '"') + "</a>");
     });
@@ -556,10 +736,10 @@
   function timeline(m, o) {
     if (!o.timeline || !m.all.length) return [];
     if (o.cards) {
-      return ["## Timeline", "", '<div align="center">', "", pic(o, "cards/timeline.svg", 'alt="Timeline of repositories created by ' + esc(m.login) + '" width="100%"'), "", "</div>", ""];
+      return [head(o, "timeline", "Timeline"), "", '<div align="center">', "", pic(o, "cards/timeline.svg", 'alt="Timeline of repositories created by ' + esc(m.login) + '" width="100%"'), "", "</div>", ""];
     }
     var repos = m.all.filter(function (r) { return r.created; }).sort(function (a, b) { return a.created < b.created ? -1 : 1; }).slice(-8);
-    var out = ["## Timeline", "", "```mermaid", "gitGraph"];
+    var out = [head(o, "timeline", "Timeline"), "", "```mermaid", "gitGraph"];
     if (m.since) out.push('   commit id: "Joined GitHub ' + m.since + '"');
     repos.forEach(function (r) { out.push('   commit id: "' + safeId(r.name) + '"'); });
     out.push("```", "");
@@ -569,11 +749,11 @@
   /** Card versions of the two sections: a heading, then one image. */
   function changelogSection(m, o) {
     if (!wantsChangelog(m, o)) return [];
-    return ["## Changelog", "", '<div align="center">', "", pic(o, "cards/changelog.svg", 'alt="Changelog of repositories created by ' + esc(m.login) + '" width="100%"'), "", "</div>", ""];
+    return [head(o, "changelog", "Changelog"), "", '<div align="center">', "", pic(o, "cards/changelog.svg", 'alt="Changelog of repositories created by ' + esc(m.login) + '" width="100%"'), "", "</div>", ""];
   }
   function recentSection(m, o) {
     if (!wantsRecent(m, o)) return [];
-    return ["## Recently pushed", "", '<div align="center">', "", pic(o, "cards/recent.svg", 'alt="Recently pushed repositories of ' + esc(m.login) + '" width="100%"'), "", "</div>", ""];
+    return [head(o, "recent", "Recently pushed"), "", '<div align="center">', "", pic(o, "cards/recent.svg", 'alt="Recently pushed repositories of ' + esc(m.login) + '" width="100%"'), "", "</div>", ""];
   }
 
   function recent(m) {
@@ -588,14 +768,14 @@
     var items = connectItems(m, o);
     if (o.cards) {
       var w = items.length === 4 ? "204" : "270";   // pixels: 3 (or 4 narrower) span the 832px desktop column like the cards above, and on a phone they stack at near full size
-      var out = ["## Connect", "", '<div align="center">', ""];
+      var out = [head(o, "connect", "Connect"), "", '<div align="center">', ""];
       items.forEach(function (it) {
         out.push('<a href="' + esc(it.url) + '">' + pic(o, "cards/connect-" + it.key + ".svg", 'alt="' + esc(it.label) + '" width="' + w + '"') + "</a>");
       });
       out.push("", "</div>", "");
       return out;
     }
-    return ["## Connect", "", '<div align="center">', "",
+    return [head(o, "connect", "Connect"), "", '<div align="center">', "",
       items.map(function (it) { return "**[" + it.label + "](" + it.url + ")**"; }).join(" · "), "", "</div>", ""];
   }
 
@@ -607,7 +787,7 @@
   }
 
   function buildReadme(m, options) {
-    var o = withDefaults(options), L = [].concat(header(m, o));
+    var o = withDefaults(options), L = [].concat(header(m, o), showpieceSection(m, o), hireSection(m, o));
     var cardProjects = o.cards && o.style !== "changelog";
     var parts = {
       stats: function () { return o.cards ? statsSection(m, o) : []; },
@@ -622,7 +802,7 @@
       connect: function () { return o.links ? links(m, o) : []; }
     };
     sectionOrder(o).forEach(function (k) { L = L.concat(parts[k]()); });
-    if (o.wave && o.cards) L.push('<div align="center">', "", pic(o, "cards/footer.svg", 'alt="" width="100%"'), "", footer(o), "", "</div>", "");
+    if ((o.wave || worldOf(o)) && o.cards) L.push('<div align="center">', "", pic(o, "cards/footer.svg", 'alt="" width="100%"'), "", footer(o), "", "</div>", "");
     else L.push("---", footer(o), "");
     return L.join("\n");
   }
@@ -816,7 +996,7 @@
     buildBanner: buildBanner, buildWaveFooter: buildWaveFooter, SAMPLE: SAMPLE, DEFAULTS: DEFAULTS,
     palette: palette, streaks: streaks, weeklyCounts: weeklyCounts, daysFromEvents: daysFromEvents,
     makeActivity: makeActivity, MAX_PROJECT_CARDS: MAX_PROJECT_CARDS, toolList: toolList, connectItems: connectItems, designation: designation,
-    THEMES: THEMES, THEME_ORDER: THEME_ORDER, fxStyle: fxStyle, fx: fx,
-    toQuery: toQuery, fromQuery: fromQuery, contrast: contrast, tips: tips, changelogData: changelogData, wantsChangelog: wantsChangelog, wantsRecent: wantsRecent, wantsUniverse: wantsUniverse, hash: hash, initials: initials, subtitle: subtitle, chipNames: chipNames, paletteFor: paletteFor, mixHex: mixHex, pickProjects: pickProjects, sectionOrder: sectionOrder, SECTIONS: SECTIONS, validHex: validHex
+    THEMES: THEMES, THEME_ORDER: THEME_ORDER, LANG_COLORS: LANG_COLORS, fxStyle: fxStyle, fx: fx,
+    toQuery: toQuery, fromQuery: fromQuery, contrast: contrast, tips: tips, changelogData: changelogData, wantsChangelog: wantsChangelog, wantsRecent: wantsRecent, wantsUniverse: wantsUniverse, wantsShowpiece: wantsShowpiece, showpieceKey: showpieceKey, WORLDS: WORLDS, WORLD_KEYS: WORLD_KEYS, worldOf: worldOf, wantsHire: wantsHire, wantsProof: wantsProof, skillProof: skillProof, recruiterSummary: recruiterSummary, certList: certList, resumeUrl: resumeUrl, parseImpact: parseImpact, impactFor: impactFor, anyImpact: anyImpact, oneLine: oneLine, SHOWPIECES: SHOWPIECES, SHOWPIECE_KEYS: SHOWPIECE_KEYS, hash: hash, initials: initials, subtitle: subtitle, chipNames: chipNames, paletteFor: paletteFor, mixHex: mixHex, pickProjects: pickProjects, sectionOrder: sectionOrder, SECTIONS: SECTIONS, validHex: validHex
   };
 });

@@ -4,7 +4,17 @@
 
 </div>
 
-## GitHub stats
+<div align="center">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/showpiece.svg"><img src="./cards/showpiece-light.svg" alt="Commit forecast for DevopsNimbus" width="100%"></picture>
+
+</div>
+
+<div align="center">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/divider-stats.svg"><img src="./cards/divider-stats-light.svg" alt="GitHub stats" width="100%"></picture>
+
+</div>
 
 <div align="center">
 
@@ -15,7 +25,11 @@
 
 </div>
 
-## Stack
+<div align="center">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/divider-stack.svg"><img src="./cards/divider-stack-light.svg" alt="Stack" width="100%"></picture>
+
+</div>
 
 <div align="center">
 
@@ -23,7 +37,11 @@
 
 </div>
 
-## Timeline
+<div align="center">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/divider-timeline.svg"><img src="./cards/divider-timeline-light.svg" alt="Timeline" width="100%"></picture>
+
+</div>
 
 <div align="center">
 
@@ -31,7 +49,11 @@
 
 </div>
 
-## Projects
+<div align="center">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/divider-projects.svg"><img src="./cards/divider-projects-light.svg" alt="Projects" width="100%"></picture>
+
+</div>
 
 <div align="center">
 
@@ -40,7 +62,11 @@
 
 </div>
 
-## Recently pushed
+<div align="center">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/divider-recent.svg"><img src="./cards/divider-recent-light.svg" alt="Recently pushed" width="100%"></picture>
+
+</div>
 
 <div align="center">
 
@@ -48,7 +74,11 @@
 
 </div>
 
-## Connect
+<div align="center">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/divider-connect.svg"><img src="./cards/divider-connect-light.svg" alt="Connect" width="100%"></picture>
+
+</div>
 
 <div align="center">
 

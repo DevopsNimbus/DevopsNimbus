@@ -12,7 +12,10 @@ const HELP = `Usage: node cli.js <github-url|username> [options]
 
 Options:
   --style <showcase|changelog>         Layout (default: showcase)
-  --theme <name>        auto (default), aurora, cyber, sunset, emerald, royal, graphite, paper
+  --world <name>        A complete design for the whole README: airport, transit, broadsheet, observatory, botanical,
+                        atlas, museum, ink, periodic, abyss
+                        (banner, every card, animated section dividers, footer and a matching showpiece). Leave out for the classic look.
+  --theme <name>        auto (default), aurora, cyber, sunset, emerald, royal, graphite, paper (the classic look's colours)
   --colors <a,b>        Your own two accent colours, like --colors #ff8800,#00c2a8 (switches to the custom theme)
   --order <list>        Section order, any of: stats, stack, timeline, projects, connect
   --featured <list>     Repos to feature as project cards, in order (up to 6), like --featured api,web,docs
@@ -21,10 +24,18 @@ Options:
   --role <text>         Job title, shown right after the name
   --stack <text>        Skills and tools (comma separated)
   --linkedin <text>     LinkedIn username or URL
+  --open-to <text>      What you're open to, shown right under the banner (like "Senior platform roles · Remote")
+  --resume <url>        A https:// link to your CV: a Résumé button and link under the banner
+  --certs <list>        Certifications, comma separated, shown as badges
+  --summary             Add a three-line recruiter summary written from your data
+  --proof               Add "Skills, with proof": each skill backed by the repos that show it
+  --impact <text>       Impact numbers per project, like "api: 40+ users, 99.9% uptime; web: 3x faster"
   --no-banner --no-cards --no-bars --pie --no-timeline --no-projects --no-links
   --recent              Add a "Recently pushed" card (your latest five repos, in any layout)
   --no-universe         Leave out the 3D contribution universe (on by default, from Git3D Universe)
   --no-wave             Use the orbit banner and a plain footer instead of the wave header and footer (on by default)
+  --showpiece <name>    One animated scene under the banner: departures, holo, metro, vinyl, vitals, garden,
+                        yearcode, newspaper, passport, constellation, weather (or none, the default)
   --universe-style <neon|theme>  The universe's colours: Git3D Universe's own cosmic palettes (neon, the default) or the theme's
   --universe-only       Rebuild only cards/universe.svg (and its light twin); used by the 3D universe workflow
   --no-adaptive         One card set only. By default there are dark and light sets, and GitHub shows the one matching the viewer
@@ -86,6 +97,7 @@ function parseArgs(argv) {
       case "--sample": o.sample = true; break;
       case "--style": o.opts.style = next(); break;
       case "--theme": o.opts.theme = next(); break;
+      case "--world": o.opts.world = next(); if (o.opts.world === "classic" || o.opts.world === "none") o.opts.world = ""; break;
       case "--colors": {
         const pair = next().split(",").map((c) => c.trim());
         if (pair.length !== 2 || !core.validHex(pair[0]) || !core.validHex(pair[1])) throw new Error("--colors needs two hex colours, like --colors #ff8800,#00c2a8");
@@ -101,6 +113,7 @@ function parseArgs(argv) {
       case "--no-wave": o.opts.wave = false; break;
       case "--no-universe": o.opts.universe = false; break;
       case "--universe-style": o.opts.universeStyle = next(); break;
+      case "--showpiece": o.opts.showpiece = next(); if (o.opts.showpiece === "none") o.opts.showpiece = ""; break;
       case "--universe-only": o.universeOnly = true; o.opts.universe = true; break;
       case "--no-animation": o.opts.animate = false; break;
       case "--no-heatmap": o.opts.heatmap = false; break;
@@ -110,6 +123,12 @@ function parseArgs(argv) {
       case "--role": o.opts.role = next(); break;
       case "--stack": o.opts.stack = next(); break;
       case "--linkedin": o.opts.linkedin = next(); break;
+      case "--open-to": o.opts.openTo = next(); break;
+      case "--resume": o.opts.resume = next(); if (!core.resumeUrl({ resume: o.opts.resume })) throw new Error("--resume needs a full https:// link, like --resume https://example.com/cv.pdf"); break;
+      case "--certs": o.opts.certs = next(); break;
+      case "--summary": o.opts.summary = true; break;
+      case "--proof": o.opts.proof = true; break;
+      case "--impact": o.opts.impact = next(); break;
       case "--no-timeline": o.opts.timeline = false; break;
       case "--out": o.out = next(); break;
       case "--publish": o.publish = true; break;
@@ -137,6 +156,8 @@ function parseArgs(argv) {
     const bad = o.opts.order.split(",").map((x) => x.trim().toLowerCase()).filter((x) => x && !core.SECTIONS.includes(x));
     if (bad.length) throw new Error("Unknown section: " + bad.join(", ") + ". Use: " + core.SECTIONS.join(", "));
   }
+  if (o.opts.world && !core.WORLD_KEYS.includes(o.opts.world)) throw new Error("--world must be one of: " + core.WORLD_KEYS.join(", ") + " (or classic)");
+  if (o.opts.showpiece && o.opts.showpiece !== "none" && !core.SHOWPIECE_KEYS.includes(o.opts.showpiece)) throw new Error("--showpiece must be one of: " + core.SHOWPIECE_KEYS.join(", ") + " (or none)");
   if (o.opts.universeStyle && !["neon", "theme"].includes(o.opts.universeStyle)) throw new Error("--universe-style must be neon or theme");
   if (o.opts.style && !["showcase", "changelog", "manifest", "plain"].includes(o.opts.style)) {
     throw new Error("--style must be showcase or changelog");
