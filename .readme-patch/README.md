@@ -1,6 +1,6 @@
 # .readme-patch
 
-This folder keeps your profile stats fresh. It was added by **Patch your profile**.
+This folder keeps your profile stats fresh. It was added by **README Glassfolio**.
 
 - **What runs:** `.github/workflows/update-readme.yml` runs every day at 05:49 UTC (and whenever you press *Run workflow* in the Actions tab).
 - **What it does:** it reads your public GitHub data, rebuilds `README.md`, `banner*.svg` and `cards/*.svg` from `config.json`, and commits only if something changed.
@@ -9,7 +9,7 @@ This folder keeps your profile stats fresh. It was added by **Patch your profile
 
 ## Changing how your profile looks
 
-`README.md` and the images are rewritten every day, so edits made to them by hand will be replaced. Change `config.json` instead, or open the Patch your profile page and publish again.
+`README.md` and the images are rewritten every day, so edits made to them by hand will be replaced. Change `config.json` instead, or open README Glassfolio and publish again.
 
 The files it manages are `README.md`, `banner.svg`, `banner-light.svg` and every `.svg` inside `cards/`. Older ones it no longer produces are removed. Nothing else in the repository is ever touched, so keep your own images elsewhere (or as other file types).
 

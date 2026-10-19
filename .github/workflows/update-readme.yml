@@ -1,4 +1,4 @@
-# Keeps your profile stats fresh. Written by "Patch your profile"; this file is yours to read, change or delete.
+# Keeps your profile stats fresh. Written by README Glassfolio; this file is yours to read, change or delete.
 #
 # Every day it rebuilds README.md and the images from .readme-patch/config.json and commits only if something changed.
 # It uses NO third-party actions: every step is plain shell, and the generator it runs is the copy in .readme-patch/.

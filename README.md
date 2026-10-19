@@ -6,7 +6,7 @@
 
 <div align="center">
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/showpiece.svg"><img src="./cards/showpiece-light.svg" alt="Passport for DevopsNimbus" width="100%"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="./cards/showpiece.svg"><img src="./cards/showpiece-light.svg" alt="Departures board for DevopsNimbus" width="100%"></picture>
 
 </div>
 
@@ -90,6 +90,6 @@
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="./cards/footer.svg"><img src="./cards/footer-light.svg" alt="" width="100%"></picture>
 
-<sub>Patched together from public GitHub data · made with <a href="https://readme-glassfolio.in/">Patch your profile</a></sub>
+<sub>Patched together from public GitHub data · made with <a href="https://readme-glassfolio.in/">README Glassfolio</a></sub>
 
 </div>

@@ -1,4 +1,4 @@
-# Keeps the 3D contribution universe (cards/universe.svg) fresh. Written by "Patch your profile"; this file is yours to read, change or delete.
+# Keeps the 3D contribution universe (cards/universe.svg) fresh. Written by README Glassfolio; this file is yours to read, change or delete.
 #
 # Every 6 hours it redraws only the universe tile from .readme-patch/config.json and commits only if it changed.
 # The daily "Update profile README" workflow redraws everything, including the universe, once a day.
